@@ -4,10 +4,12 @@ Cliente móvil oficial de Canchago (Ionic + React + TypeScript + Capacitor). Con
 
 ## Cómo correr todo en local
 
+Asume que clonaste `canchago` (backend) y `canchago-ionic` (este repo) como carpetas hermanas, dentro de un mismo directorio padre.
+
 ### Backend (`canchago`)
 
 ```bash
-cd /Users/pleones11/Documents/UEA/PROYECTOS/canchago
+cd ../canchago
 
 # Keycloak (Docker) — si no está corriendo
 docker compose up -d
@@ -27,7 +29,6 @@ docker compose down && docker compose up -d
 ### Frontend — modo navegador (flujo `002`, cookie)
 
 ```bash
-cd /Users/pleones11/Documents/UEA/PROYECTOS/canchago-ionic
 yarn dev          # http://localhost:5173 — usa el proxy de Vite hacia el backend
 ```
 
@@ -36,8 +37,6 @@ yarn dev          # http://localhost:5173 — usa el proxy de Vite hacia el back
 ### Frontend — Android (flujo `003`, formulario nativo)
 
 ```bash
-cd /Users/pleones11/Documents/UEA/PROYECTOS/canchago-ionic
-
 # Si el emulador no está corriendo:
 $ANDROID_HOME/emulator/emulator -avd Medium_Phone_API_36.0 &
 
@@ -53,7 +52,6 @@ Usuario de prueba: **`futbolista`** / **`canchago123`**.
 ### Frontend — iOS
 
 ```bash
-cd /Users/pleones11/Documents/UEA/PROYECTOS/canchago-ionic
 yarn ios          # build + sync + abre Xcode
 # — o —
 yarn ios:run      # build + sync + corre directo en el simulador
