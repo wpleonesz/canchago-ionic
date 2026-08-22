@@ -138,6 +138,16 @@ Edite `VITE_API_BASE_URL` de acuerdo con el destino descrito en la sección nati
 
 ### 1. Levantar el sistema en orden
 
+Antes de iniciar el cliente por primera vez, el backend debe tener aplicadas sus migraciones y semillas. Desde `canchago/`, ejecute al menos una vez:
+
+```bash
+yarn migrate-dev
+yarn seed
+yarn seed-dev
+```
+
+Las semillas crean permisos y roles, pero el primer Administrador requiere además iniciar sesión una vez, ejecutar `yarn asignar-rol` y volver a autenticarse. Siga el procedimiento completo en [“Aplicar migraciones y ejecutar las semillas obligatorias”](../canchago/README.md#6-aplicar-migraciones-y-ejecutar-las-semillas-obligatorias). Sin este bootstrap, el login puede funcionar pero las operaciones administrativas responderán `403`.
+
 ```bash
 # Terminal 1, desde canchago/
 docker compose up -d
