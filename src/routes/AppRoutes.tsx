@@ -16,6 +16,10 @@ const AppRoutes: React.FC = () => (
     <ProtectedRoute path="/admin">
       <AdminLayout />
     </ProtectedRoute>
+    <Redirect exact from="/users/:userId/edit" to="/admin/users/:userId/edit" />
+    <Redirect exact from="/users/:userId" to="/admin/users/:userId" />
+    <Redirect exact from="/users" to="/admin/users" />
+    <Redirect exact from="/home" to="/admin" />
     <Redirect exact from="/" to="/admin" />
   </IonRouterOutlet>
 );

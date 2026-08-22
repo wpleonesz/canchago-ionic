@@ -18,7 +18,7 @@ const UserListItem: React.FC<UserListItemProps> = ({ user, onDeactivate }) => {
       detail={false}
       lines="full"
       className="user-list-item"
-      onClick={() => history.push(`/users/${user.id}`)}
+      onClick={() => history.push(`/admin/users/${user.id}`)}
     >
       <IonLabel>
         <h2>
