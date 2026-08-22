@@ -35,7 +35,36 @@ corepack --version
 yarn --version       # dentro del repo: 3.6.4
 ```
 
-Si hace falta, ejecute `corepack enable` y vuelva a abrir la terminal. No es necesario instalar Ionic CLI ni Capacitor globalmente: los scripts usan las dependencias locales del proyecto.
+Si hace falta, ejecute `corepack enable` y vuelva a abrir la terminal.
+
+### Ionic CLI y Capacitor CLI: qué debe instalar realmente
+
+Ionic y Capacitor no se instalan de la misma manera en este proyecto:
+
+| Herramienta                      | ¿Debe instalarla globalmente? | Cómo se obtiene aquí                                                         |
+| -------------------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| Ionic Framework (`@ionic/react`) | No                            | `yarn install` la instala como dependencia del proyecto                      |
+| Ionic CLI (`ionic`)              | No se requiere                | El repositorio usa Vite directamente mediante `yarn dev` y `yarn build`      |
+| Capacitor CLI (`cap`)            | No                            | `yarn install` instala `@capacitor/cli` 8.5.0 como dependencia de desarrollo |
+| Capacitor Android/iOS            | No globalmente                | `yarn install` instala `@capacitor/android` y `@capacitor/ios` 8.5.0         |
+
+Por tanto, **no ejecute** `npm install -g @ionic/cli` ni `npm install -g @capacitor/cli` para preparar este repositorio. Una instalación global podría usar una versión distinta de la fijada en `yarn.lock`. Los scripts `yarn android`, `yarn ios` y `yarn cap:sync` resuelven automáticamente el ejecutable local `cap`.
+
+Después de `yarn install`, compruebe la CLI local de Capacitor:
+
+```bash
+yarn cap --version      # debe mostrar 8.5.0
+```
+
+No existe un comando `ionic` necesario para el flujo normal. Sus equivalencias en este proyecto son:
+
+| Tarea habitual de Ionic  | Comando real del repositorio |
+| ------------------------ | ---------------------------- |
+| Servidor de desarrollo   | `yarn dev`                   |
+| Build web para Capacitor | `yarn build`                 |
+| Sincronizar plataformas  | `yarn cap:sync`              |
+| Abrir Android            | `yarn android`               |
+| Abrir iOS                | `yarn ios`                   |
 
 ### Adicional para Android
 
@@ -81,10 +110,11 @@ Las carpetas hermanas permiten que los enlaces funcionen, pero no son un requisi
 
 ```bash
 yarn install
+yarn cap --version
 yarn typecheck
 ```
 
-Yarn restaura el lockfile y `typecheck` confirma que TypeScript puede resolver la instalación.
+Yarn restaura el lockfile e instala Ionic React, Capacitor y el resto de las dependencias dentro del proyecto. `yarn cap --version` comprueba que Capacitor CLI local está disponible y `typecheck` confirma que TypeScript puede resolver la instalación.
 
 ### 3. Configurar la API
 
