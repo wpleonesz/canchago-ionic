@@ -11,7 +11,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children, ...routeProps }) =>
   if (isSuccess) {
     return (
       <Route {...routeProps}>
-        <Redirect to="/home" />
+        <Redirect to="/admin" />
       </Route>
     );
   }

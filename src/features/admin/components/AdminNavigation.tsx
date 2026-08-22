@@ -41,7 +41,7 @@ const AdminNavigation: React.FC<AdminNavigationProps> = ({ groups }) => {
               <IonIcon icon={gridOutline} />
             </span>
             <span>
-              <strong>canchago</strong>
+              <strong>CanchaGO</strong>
               <small>Administración</small>
             </span>
           </header>

@@ -15,7 +15,7 @@ const AuthShell: React.FC<PropsWithChildren<AuthShellProps>> = ({ title, descrip
       </div>
       <p className="auth-shell__eyebrow">Tu cancha, a un toque</p>
       <h1 id="auth-brand-title" className="auth-shell__brand-name">
-        canchago
+        CanchaGO
       </h1>
       <p className="auth-shell__brand-copy">Gestiona tus espacios deportivos desde cualquier lugar.</p>
     </section>

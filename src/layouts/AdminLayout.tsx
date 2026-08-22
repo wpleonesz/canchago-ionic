@@ -1,18 +1,15 @@
 import { useMemo } from 'react';
 import { Route, Switch, useLocation } from 'react-router-dom';
 import {
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonMenuButton,
   IonPage,
   IonSplitPane,
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import { homeOutline } from 'ionicons/icons';
 import AdminNavigation from '../features/admin/components/AdminNavigation';
 import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import AdminModulePendingPage from '../features/admin/pages/AdminModulePendingPage';
@@ -29,7 +26,7 @@ const AdminLayout: React.FC = () => {
   const permissions = useSessionStore(state => state.user?.permissions);
   const groups = useMemo(() => filterAdminNavigation(ADMIN_NAVIGATION, permissions), [permissions]);
   const activeItem = findActiveAdminItem(groups, location.pathname);
-  const pageTitle = location.pathname === '/admin' ? 'Inicio administrativo' : (activeItem?.label ?? 'Administración');
+  const pageTitle = location.pathname === '/admin' ? 'Inicio' : (activeItem?.label ?? 'Administración');
 
   return (
     <IonSplitPane contentId="admin-content" when="(min-width: 900px)" className="admin-shell">
@@ -41,25 +38,18 @@ const AdminLayout: React.FC = () => {
               <IonMenuButton menu="admin-menu" aria-label="Abrir menú administrativo" />
             </IonButtons>
             <IonTitle>{pageTitle}</IonTitle>
-            <IonButtons slot="end">
-              <IonButton routerLink="/home" routerDirection="root" aria-label="Volver al inicio">
-                <IonIcon slot="icon-only" icon={homeOutline} />
-              </IonButton>
-            </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
           <div className="admin-content__inner">
             <Switch>
-              <AdminRoute
-                exact
-                path="/admin"
-                requiredPermissions={ADMIN_NAVIGATION.flatMap(group =>
-                  group.items.flatMap(item => item.requiredPermissions),
-                )}
-              >
+              {/* Sin gate de permisos: /admin es ahora el destino de inicio de todo usuario
+                  autenticado (fusión con la antigua /home), tenga o no capacidades
+                  administrativas — AdminDashboardPage ya se adapta a ese caso. Los módulos
+                  concretos de abajo sí exigen su propio permiso. */}
+              <Route exact path="/admin">
                 <AdminDashboardPage groups={groups} />
-              </AdminRoute>
+              </Route>
               <Route path="/admin/users">
                 <UsersModule />
               </Route>

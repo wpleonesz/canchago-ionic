@@ -53,3 +53,18 @@ export interface UserListResponse {
   data: UserDto[];
   meta: PaginationMeta;
 }
+
+export interface AdminUserProfileDto {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  active: boolean;
+  profileUpdatedAt: string;
+}
+
+export interface UpdateAdminUserProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  expectedProfileUpdatedAt: string;
+}

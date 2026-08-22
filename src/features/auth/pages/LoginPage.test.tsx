@@ -35,7 +35,7 @@ describe('LoginPage', () => {
 
     const { container } = render(<LoginPage />, { wrapper });
 
-    expect(screen.getByRole('heading', { name: 'canchago' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'CanchaGO' })).toBeInTheDocument();
     expect(container.querySelector('ion-input[label="Usuario"]')).toBeInTheDocument();
     expect(container.querySelector('ion-input[label="Contraseña"]')).toBeInTheDocument();
     expect(container.querySelector('ion-button[type="submit"]')).toHaveTextContent('Iniciar sesión');

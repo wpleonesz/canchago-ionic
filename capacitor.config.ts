@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'ec.canchago.app',
-  appName: 'Canchago',
+  appName: 'CanchaGO',
   webDir: 'dist',
   server: {
     // Por defecto Android sirve el WebView en https://localhost, y el navegador bloquea por

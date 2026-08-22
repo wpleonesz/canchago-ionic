@@ -2,7 +2,7 @@
 
 _Contratos reales verificados leyendo el código de `canchago` (no la documentación OpenAPI cuando ambas discrepan — se anota explícitamente cuando eso pasa). Este documento se actualiza cada vez que una feature consume o descubre un contrato nuevo, y es el lugar donde se registran necesidades de cambio en el backend **antes** de pedir su implementación — nunca se modifica `canchago` directamente desde este proyecto._
 
-Última verificación: 2026-08-14, contra el estado actual de `canchago` en `main`.
+Última verificación: 2026-08-21, contra el estado local actual de `canchago`.
 
 ---
 
@@ -26,6 +26,7 @@ POST /api/auth/logout      → auth requerido → 204 (revoca en Keycloak + marc
 `SessionUser = { id, email, name, roles: [{id, code, name}], permissions: [{id, code}] }`.
 
 **Cookies:**
+
 - `canchago_session` — `HttpOnly; Secure; SameSite=Lax; Path=/`, 8h. Solo contiene `{sessionId, createdAt}` sellado con `@hapi/iron`; los tokens OAuth reales viven server-side en la tabla `user_sessions`.
 - `canchago_oauth_state` — igual de flags, 10 min TTL, temporal durante el handshake.
 
@@ -48,7 +49,7 @@ POST /api/auth/logout      → auth requerido → 204 (revoca en Keycloak + marc
 
 1. **Mixed Content (Android)** — el WebView sirve la app en `https://localhost` por defecto; una página HTTPS no puede llamar a un backend HTTP. Fix: `capacitor.config.ts` → `server.androidScheme: 'http'`.
 2. **App Transport Security (iOS)** — mismo problema, otro mecanismo. Fix: `Info.plist` → `NSAppTransportSecurity.NSAllowsArbitraryLoads`.
-3. **`usesCleartextTraffic` (Android)** — con `targetSdkVersion 36`, Android bloquea *todo* tráfico HTTP a nivel de red para la app entera, más allá del WebView. Fix: `AndroidManifest.xml` → `android:usesCleartextTraffic="true"`.
+3. **`usesCleartextTraffic` (Android)** — con `targetSdkVersion 36`, Android bloquea _todo_ tráfico HTTP a nivel de red para la app entera, más allá del WebView. Fix: `AndroidManifest.xml` → `android:usesCleartextTraffic="true"`.
 4. **Backend sin CORS** — una vez resueltos 1–3, las llamadas salían pero el navegador bloqueaba leer la respuesta. Fix: `canchago/proxy.ts` (arriba).
 5. **`withCredentials: true` incompatible con CORS `*`** — heredado de la config web; un navegador rechaza la combinación aunque no exista cookie real que enviar. Fix: `apiClient.ts` → `withCredentials: !Capacitor.isNativePlatform()`.
 6. **Header `X-Correlation-ID` fuera de la lista de CORS** — el interceptor de trazabilidad lo agrega a cada request; el preflight lo rechazaba. Fix: incluido en `Access-Control-Allow-Headers` de `proxy.ts`.
@@ -71,15 +72,15 @@ No hay `next.config.ts` con headers CORS ni `middleware.ts` raíz en `canchago`.
 
 ## 6. Endpoints disponibles hoy (identidad/RBAC — no hay dominio de reservas aún)
 
-| Recurso | Rutas | Métodos + permiso | Notas |
-|---|---|---|---|
-| Auth | `/api/auth/{login,callback,session,refresh,logout}` | ver §2 | público excepto session/refresh/logout |
-| Usuarios | `/api/users`, `/api/users/{userId}`, `/api/users/{userId}/roles`, `/api/users/{userId}/roles/{roleId}` | GET/POST/PATCH/DELETE, permisos `users.*` | bug de §4 corregido; DELETE es soft (status→INACTIVE); lista NO incluye roles, detalle SÍ; ver quiebres reales abajo (`active`, `orderBy`) |
-| Organizaciones | `/api/organizaciones`, `/api/organizaciones/{organizationId}` | GET/POST/PATCH/DELETE, `organizaciones.read`/`.manage` | **lista responde `{organizations, meta}`, NO `{data, meta}`** — el propio Swagger del backend lo documenta mal, no confiar en `GET /api/docs` para este endpoint |
-| Sedes | `/api/organizaciones/{organizationId}/sedes`, `.../sedes/{sedeId}` | GET/POST/PATCH/DELETE, mismos permisos que organizaciones | **lista responde `{venues, meta}`, NO `{data, meta}`** — mismo bug de documentación |
-| Roles | `/api/roles`, `/api/roles/{roleId}`, `/api/roles/{roleId}/permisos` | GET/POST/PATCH/DELETE, `roles.read`/`.manage` | requieren `?organizationId=<uuid>` como query, NO como parte del path — fácil de olvidar; **nunca devuelve roles globales** (`organizationId: null`, como `Administrador`/`Futbolista`) — coincidencia estricta contra el `organizationId` dado, ver quiebre abajo |
-| Permisos | `/api/permisos` | GET, `permisos.read` | catálogo global, sin CRUD |
-| Docs | `/api/docs`, `/api/docs/spec` | público | Swagger UI real, útil para explorar pero no 100% confiable (ver bugs de envelope arriba) |
+| Recurso        | Rutas                                                                                                                                 | Métodos + permiso                                         | Notas                                                                                                                                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Auth           | `/api/auth/{login,callback,session,refresh,logout}`                                                                                   | ver §2                                                    | público excepto session/refresh/logout                                                                                                                                                                                                                             |
+| Usuarios       | `/api/users`, `/api/users/{userId}`, `/api/users/{userId}/profile`, `/api/users/{userId}/roles`, `/api/users/{userId}/roles/{roleId}` | GET/POST/PATCH/DELETE, permisos `users.*`                 | DELETE es soft (status→INACTIVE); la edición básica usa el subrecurso `/profile`; lista NO incluye roles, detalle SÍ; ver quiebres reales abajo (`active`, `orderBy`)                                                                                              |
+| Organizaciones | `/api/organizaciones`, `/api/organizaciones/{organizationId}`                                                                         | GET/POST/PATCH/DELETE, `organizaciones.read`/`.manage`    | **lista responde `{organizations, meta}`, NO `{data, meta}`** — el propio Swagger del backend lo documenta mal, no confiar en `GET /api/docs` para este endpoint                                                                                                   |
+| Sedes          | `/api/organizaciones/{organizationId}/sedes`, `.../sedes/{sedeId}`                                                                    | GET/POST/PATCH/DELETE, mismos permisos que organizaciones | **lista responde `{venues, meta}`, NO `{data, meta}`** — mismo bug de documentación                                                                                                                                                                                |
+| Roles          | `/api/roles`, `/api/roles/{roleId}`, `/api/roles/{roleId}/permisos`                                                                   | GET/POST/PATCH/DELETE, `roles.read`/`.manage`             | requieren `?organizationId=<uuid>` como query, NO como parte del path — fácil de olvidar; **nunca devuelve roles globales** (`organizationId: null`, como `Administrador`/`Futbolista`) — coincidencia estricta contra el `organizationId` dado, ver quiebre abajo |
+| Permisos       | `/api/permisos`                                                                                                                       | GET, `permisos.read`                                      | catálogo global, sin CRUD                                                                                                                                                                                                                                          |
+| Docs           | `/api/docs`, `/api/docs/spec`                                                                                                         | público                                                   | Swagger UI real, útil para explorar pero no 100% confiable (ver bugs de envelope arriba)                                                                                                                                                                           |
 
 **No existen** endpoints de canchas/recursos reservables ni reservas — ese dominio aún no está modelado en `canchago` (confirmado en `prisma/schema.prisma`). Cualquier feature de "buscar/reservar cancha" requiere trabajo previo de backend, fuera del alcance de este proyecto hasta que se construya allí.
 
@@ -87,6 +88,34 @@ No hay `next.config.ts` con headers CORS ni `middleware.ts` raíz en `canchago`.
 
 - **`active=false` no filtra a "solo inactivos".** El backend hace `status: filters.active ? 'ACTIVE' : undefined` — pasar `active=false` tiene el mismo efecto que omitir el parámetro (muestra todos los estados). `canchago-ionic` solo ofrece "Activos" (`active=true`) / "Todos" (parámetro omitido); nunca "solo inactivos".
 - **`orderBy=name` no es válido en el modelo real.** El schema Zod del backend permite `orderBy: 'name'|'email'|'createdAt'`, pero `User` no tiene columna `name` (vive partido en `UserProfile.firstName`/`lastName`) — usarlo dispara un error de Prisma devuelto como `500 INTERNAL_ERROR` genérico. `canchago-ionic` solo ofrece `email`/`createdAt` como ordenamiento.
+
+### Edición administrativa de perfil (feature `007`, 2026-08-21)
+
+Contrato verificado e implementado en `canchago/pages/api/users/[userId]/profile.ts`:
+
+```text
+GET   /api/users/{userId}/profile   → users.read
+PATCH /api/users/{userId}/profile   → users.update
+```
+
+Respuesta individual de ambos métodos:
+
+```ts
+{
+  data: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    active: boolean;
+    profileUpdatedAt: string;
+  }
+}
+```
+
+El PATCH acepta únicamente `{ firstName?, lastName?, expectedProfileUpdatedAt }`, exige al menos un nombre y rechaza claves desconocidas. `expectedProfileUpdatedAt` es el timestamp ISO recibido en el GET; si quedó obsoleto responde `409 CONFLICT`. También responde 409 para usuarios inactivos, 404 para usuario/perfil inexistente y 403 cuando un actor no Administrador intenta editar un usuario con rol `isSystem`.
+
+Email, username, identificación, estado, roles, permisos, contraseñas, hashes, tokens e IDs no pertenecen a este contrato. El backend rechaza esos campos en vez de ignorarlos. La respuesta no incluye identificación, RBAC ni información de autenticación.
 
 ## 7. Contrato de respuesta
 
@@ -121,4 +150,5 @@ _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aq
 
 - **2026-08-14** — Discovery inicial. Documento creado a partir de lectura directa de `canchago` (auth, middleware, `pages/api/`, `prisma/schema.prisma`, validaciones Zod, `.env.example`).
 - **2026-08-21** — Feature `005-gestion-usuarios`: corrección del bug de códigos de permiso (§4, ya no reproduce, verificado en código real de `canchago`); documentados los quiebres reales de `GET /api/users` (`active=false`, `orderBy=name`, ver §6) y de `GET /api/roles` (nunca expone roles globales); registrada la dependencia de `canchago/spec/features/015-bootstrap-super-admin/` para que la protección contra escalamiento de privilegios sea real y no solo una ocultación de UI (§4).
+- **2026-08-21** — Feature `007-edicion-perfil-usuario-administracion`: añadido y verificado el subrecurso administrativo `/api/users/{userId}/profile`, con DTO mínimo, permisos `users.read`/`users.update`, lista blanca estricta, protección de usuarios de sistema y concurrencia optimista mediante `profileUpdatedAt`.
 - **2026-08-14** — Feature `002-autenticacion`: contrato de auth (§2) **confirmado con prueba real** contra el backend corriendo local (Postgres nativo + Keycloak vía Docker + `yarn dev`), no solo leído. Flujo completo login → sesión → logout probado dos veces: primero con `curl` + cookie jar (usuario semilla `futbolista`/`canchago123`), después con Chrome headless real (Playwright) ejecutando el código real de `canchago-ionic`. Se corrigió la estrategia de "mismo origen" documentada en `tech-stack.md` §6 — la idea original (`Capacitor server.url` apuntando al backend) no es viable tal como estaba escrita; ver el post-mortem en ese documento. La solución real para desarrollo es un proxy de Vite; para el empaquetado nativo, el gap de §3 de este documento sigue abierto y sin resolver.

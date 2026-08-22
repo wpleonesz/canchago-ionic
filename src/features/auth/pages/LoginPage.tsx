@@ -23,7 +23,7 @@ const WebLogin: React.FC<{ hasAuthError: boolean }> = ({ hasAuthError }) => {
   const [isNavigating, setIsNavigating] = useState(false);
 
   return (
-    <AuthShell title="Te damos la bienvenida" description="Continúa con tu cuenta segura de Canchago.">
+    <AuthShell title="Te damos la bienvenida" description="Continúa con tu cuenta segura de CanchaGO.">
       {hasAuthError && (
         <IonText className="auth-message auth-message--error" role="alert">
           <p>No se pudo completar el inicio de sesión. Intenta nuevamente.</p>
@@ -134,7 +134,7 @@ const LoginPage: React.FC = () => {
   const hasAuthError = new URLSearchParams(location.search).get('error') === 'auth';
 
   return (
-    <AppPage title="Iniciar sesión en Canchago" showHeader={false}>
+    <AppPage title="Iniciar sesión en CanchaGO" showHeader={false}>
       {Capacitor.isNativePlatform() ? <NativeLoginForm /> : <WebLogin hasAuthError={hasAuthError} />}
     </AppPage>
   );

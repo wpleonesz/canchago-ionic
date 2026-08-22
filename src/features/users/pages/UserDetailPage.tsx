@@ -64,7 +64,7 @@ const UserDetailPage: React.FC = () => {
       <div className="user-detail-page__actions">
         <PermissionGuard permission="users.update">
           <AppButton fill="outline" onClick={() => history.push(`/admin/users/${user.id}/edit`)}>
-            Editar
+            Editar perfil
           </AppButton>
         </PermissionGuard>
 
