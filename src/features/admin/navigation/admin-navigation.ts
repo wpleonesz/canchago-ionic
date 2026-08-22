@@ -1,4 +1,4 @@
-import { businessOutline, keyOutline, peopleOutline, shieldCheckmarkOutline } from 'ionicons/icons';
+import { checkmarkDoneOutline, keyOutline, peopleOutline, shieldCheckmarkOutline } from 'ionicons/icons';
 
 export interface AdminNavigationItem {
   id: string;
@@ -52,11 +52,13 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
     items: [
       {
         id: 'organizations',
-        label: 'Organizaciones y sedes',
-        description: 'Gestiona la estructura multiempresa disponible.',
-        icon: businessOutline,
+        label: 'Solicitudes de acceso',
+        // Hoy solo aprueba/rechaza organizaciones creadas por registro público (feature 016);
+        // el CRUD completo de organizaciones y sedes sigue siendo backlog (006), sin fecha.
+        description: 'Aprueba o rechaza organizaciones nuevas creadas por registro público.',
+        icon: checkmarkDoneOutline,
         path: '/admin/organizations',
-        requiredPermissions: ['organizaciones.read'],
+        requiredPermissions: ['organizaciones.manage'],
       },
     ],
   },

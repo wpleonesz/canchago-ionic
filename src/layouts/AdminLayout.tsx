@@ -16,6 +16,7 @@ import AdminModulePendingPage from '../features/admin/pages/AdminModulePendingPa
 import AdminNotFoundPage from '../features/admin/pages/AdminNotFoundPage';
 import { filterAdminNavigation, findActiveAdminItem } from '../features/admin/navigation/admin-capabilities';
 import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation';
+import AccessRequestsModule from '../features/access-requests/pages/AccessRequestsModule';
 import UsersModule from '../features/users/pages/UsersModule';
 import OwnProfilePage from '../features/users/pages/OwnProfilePage';
 import AdminRoute from '../routes/AdminRoute';
@@ -63,9 +64,9 @@ const AdminLayout: React.FC = () => {
               <AdminRoute path="/admin/permissions" requiredPermissions={['permisos.read']}>
                 <AdminModulePendingPage moduleName="Catálogo de permisos" />
               </AdminRoute>
-              <AdminRoute path="/admin/organizations" requiredPermissions={['organizaciones.read']}>
-                <AdminModulePendingPage moduleName="Organizaciones y sedes" />
-              </AdminRoute>
+              <Route path="/admin/organizations">
+                <AccessRequestsModule />
+              </Route>
               <AdminNotFoundPage />
             </Switch>
           </div>

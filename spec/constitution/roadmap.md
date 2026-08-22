@@ -15,7 +15,7 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 ## Siguiente 🔜
 
-_Ninguna feature en curso. La siguiente queda a decidir entre las ideas del backlog y sus dependencias de backend._
+- **008 · Registro público de usuarios** — Implementada y verificada en navegador (Playwright contra `yarn dev` real, Keycloak/Postgres reales): `/register` con selector Futbolista/Gestor de Cancha, ambos flujos de registro, confirmación distinta por tipo de cuenta, enlace desde `/login`, prellenado de email en el login nativo, y el nuevo módulo administrativo `/admin/organizations` (solicitudes de acceso: listar, aprobar, rechazar, con `AppConfirmDialog`) — reemplaza el placeholder de organizaciones, ahora protegido por `organizaciones.manage` en vez de `organizaciones.read`. 30 pruebas nuevas, lint/typecheck/build limpios. Un bug real de layout se encontró y corrigió durante la verificación manual (`AccessRequestListItem`: badge + botones en `slot="end"` se cortaban fuera de un viewport móvil angosto). **No se marca "Hecho" todavía**: falta la verificación en un emulador/dispositivo Android o iOS real (`yarn android`/`yarn ios`) — el único target real de esta app, per `tech-stack.md`; el navegador solo valida la lógica. Ver `spec/features/008-registro-publico/tasks.md`.
 
 ## Backlog / ideas 💡
 

@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
-import { IonInputPasswordToggle, IonText } from '@ionic/react';
+import { IonInputPasswordToggle, IonRouterLink, IonText } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
 import AppInput from '../../../components/forms/AppInput';
 import AppPage from '../../../components/layout/AppPage';
@@ -40,13 +40,16 @@ const WebLogin: React.FC<{ hasAuthError: boolean }> = ({ hasAuthError }) => {
         Continuar
       </AppButton>
       <p className="auth-shell__privacy">Tus datos de acceso se procesan de forma segura.</p>
+      <p className="auth-shell__privacy">
+        ¿No tienes cuenta? <IonRouterLink routerLink="/register">Regístrate</IonRouterLink>
+      </p>
     </AuthShell>
   );
 };
 
 // Nativo (feature 003): formulario propio de usuario/contraseña — el backend habla con
 // Keycloak por detrás, la app nunca abre un navegador ni una pantalla ajena.
-const NativeLoginForm: React.FC = () => {
+const NativeLoginForm: React.FC<{ defaultUsername?: string }> = ({ defaultUsername }) => {
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -56,7 +59,7 @@ const NativeLoginForm: React.FC = () => {
     formState: { isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { username: defaultUsername ?? '', password: '' },
   });
 
   const onSubmit = async (values: LoginFormValues): Promise<void> => {
@@ -125,17 +128,28 @@ const NativeLoginForm: React.FC = () => {
         </AppButton>
       </form>
       <p className="auth-shell__privacy">Nunca compartiremos tus credenciales.</p>
+      <p className="auth-shell__privacy">
+        ¿No tienes cuenta? <IonRouterLink routerLink="/register">Regístrate</IonRouterLink>
+      </p>
     </AuthShell>
   );
 };
 
+interface LoginLocationState {
+  email?: string;
+}
+
 const LoginPage: React.FC = () => {
-  const location = useLocation();
+  const location = useLocation<LoginLocationState | undefined>();
   const hasAuthError = new URLSearchParams(location.search).get('error') === 'auth';
 
   return (
     <AppPage title="Iniciar sesión en CanchaGO" showHeader={false}>
-      {Capacitor.isNativePlatform() ? <NativeLoginForm /> : <WebLogin hasAuthError={hasAuthError} />}
+      {Capacitor.isNativePlatform() ? (
+        <NativeLoginForm defaultUsername={location.state?.email} />
+      ) : (
+        <WebLogin hasAuthError={hasAuthError} />
+      )}
     </AppPage>
   );
 };

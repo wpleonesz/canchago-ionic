@@ -80,7 +80,49 @@ No hay `next.config.ts` con headers CORS ni `middleware.ts` raíz en `canchago`.
 | Sedes          | `/api/organizaciones/{organizationId}/sedes`, `.../sedes/{sedeId}`                                                                    | GET/POST/PATCH/DELETE, mismos permisos que organizaciones | **lista responde `{venues, meta}`, NO `{data, meta}`** — mismo bug de documentación                                                                                                                                                                                |
 | Roles          | `/api/roles`, `/api/roles/{roleId}`, `/api/roles/{roleId}/permisos`                                                                   | GET/POST/PATCH/DELETE, `roles.read`/`.manage`             | requieren `?organizationId=<uuid>` como query, NO como parte del path — fácil de olvidar; **nunca devuelve roles globales** (`organizationId: null`, como `Administrador`/`Futbolista`) — coincidencia estricta contra el `organizationId` dado, ver quiebre abajo |
 | Permisos       | `/api/permisos`                                                                                                                       | GET, `permisos.read`                                      | catálogo global, sin CRUD                                                                                                                                                                                                                                          |
-| Docs           | `/api/docs`, `/api/docs/spec`                                                                                                         | público                                                   | Swagger UI real, útil para explorar pero no 100% confiable (ver bugs de envelope arriba)                                                                                                                                                                           |
+| Registro       | `/api/auth/register`                                                                                                                  | POST, público                                             | ver §6.1 — límite de tasa real (429) por IP y por email                                                                                                                                                                                                            |
+| Solicitudes de acceso | `/api/organizaciones/access-requests`, `.../access-requests/{requestId}/approve`, `.../reject`                                | GET/POST, `organizaciones.manage`                         | ver §6.1                                                                                                                                                                                                                                                            |
+| Docs           | `/api/docs`, `/api/docs/spec`                                                                                                         | público                                                   | Swagger UI real, útil para explorar pero no 100% confiable (ver bugs de envelope arriba); hoy además `GET /api/docs` no compila del todo en `canchago` por un problema preexistente de tipos en `zod-to-openapi` (ver su `roadmap.md`, ítem `010`) — no relacionado con estos endpoints |
+
+### 6.1 Registro público y aprobación de acceso (feature `008-registro-publico`, backend `016`, 2026-08-22)
+
+Contrato verificado en código real (`canchago/validations/auth/register.validation.ts`, `canchago/pages/api/auth/register.ts`, `canchago/pages/api/organizaciones/access-requests/`) y contra el backend corriendo (Playwright, ver `tasks.md` de esta feature):
+
+```ts
+// POST /api/auth/register — sin sesión
+{
+  email: string; password: string; firstName: string; lastName: string;
+  accountType: 'futbolista' | 'gestor-de-cancha';
+  organization?: { name: string; legalName?; taxIdentification?; email?; phone?; domain? }; // solo gestor-de-cancha
+  venue?: { name: string; address?; phone?; email? };                                        // solo gestor-de-cancha
+}
+// 201 →
+{ data: { accountType: 'futbolista'; user: { id, email, firstName, lastName } } }
+// o, para gestor-de-cancha:
+{ data: { accountType: 'gestor-de-cancha'; user: {...}; accessRequestId: string; organizationStatus: 'PENDING_APPROVAL' } }
+```
+
+Nunca devuelve contraseña ni tokens de sesión — no crea sesión (login sigue el flujo real de §2/§3). `Futbolista` obtiene el rol de inmediato; `gestor-de-cancha` no obtiene ningún rol: su Organization/Venue quedan en `PENDING_APPROVAL` hasta que se aprueba la solicitud. Errores: `409` email duplicado (Zod `email` inválido → `400`; password < 8 caracteres → `400`, espeja `passwordPolicy` real del realm de Keycloak), `429` límite de tasa (5/hora por IP, 3/día por email) con mensaje `"Demasiados intentos. Intenta de nuevo más tarde."` — **primer endpoint que realmente lanza `TOO_MANY_REQUESTS`**, actualizar la nota de §7 en consecuencia.
+
+```ts
+// GET /api/organizaciones/access-requests?page&pageSize&status=PENDING|APPROVED|REJECTED (default PENDING)
+// → organizaciones.manage
+{
+  data: Array<{
+    id: string; status: 'PENDING' | 'APPROVED' | 'REJECTED'; createdAt: string;
+    reviewedAt: string | null; rejectionReason: string | null;
+    organization: { id, name, status, venues: Array<{ id, name, status }> };
+    requester: { id, email, profile: { firstName, lastName } };
+  }>;
+  meta: PaginationMeta;
+}
+
+// POST .../access-requests/{requestId}/approve → 200 { data: { organizationId, status } }
+// POST .../access-requests/{requestId}/reject  → body opcional { reason? } → 200 { data: { requestId, status } }
+// Ambos: 404 si no existe, 409 si status !== 'PENDING' (ya revisada)
+```
+
+Aprobar activa la Organization y TODAS sus Venue (`status: 'ACTIVE'`) y crea (o reutiliza, si ya existe para esa organización) el rol "Gestor de Cancha" con alcance a esa organización, asignándoselo al solicitante — sin relogin, el rol aparece en la siguiente lectura de sesión (mismo mecanismo que la feature `009` del backend). Rechazar deja Organization/Venue en `PENDING_APPROVAL` (no se activan, no se borran) y guarda `rejectionReason`.
 
 **No existen** endpoints de canchas/recursos reservables ni reservas — ese dominio aún no está modelado en `canchago` (confirmado en `prisma/schema.prisma`). Cualquier feature de "buscar/reservar cancha" requiere trabajo previo de backend, fuera del alcance de este proyecto hasta que se construya allí.
 
@@ -142,7 +184,7 @@ El PUT recibe `{ imageBase64, mimeType }`, admite JPEG/PNG/WebP reales hasta 2 M
 { "error": { "code": "VALIDATION_ERROR", "message": "...", "details": [{ "field", "message", "type" }] } }
 ```
 
-Códigos de error reales usados hoy: `VALIDATION_ERROR` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `INTERNAL_ERROR` (500), `METHOD_NOT_ALLOWED` (405). `BUSINESS_RULE_ERROR` (422) y `TOO_MANY_REQUESTS` (429) están reservados en el backend pero **ningún endpoint los lanza todavía** — no construir UI para ellos como si existieran hoy.
+Códigos de error reales usados hoy: `VALIDATION_ERROR` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `INTERNAL_ERROR` (500), `METHOD_NOT_ALLOWED` (405), `TOO_MANY_REQUESTS` (429, desde la feature `016`/`008` — ver §6.1). `BUSINESS_RULE_ERROR` (422) sigue reservado en el backend pero **ningún endpoint lo lanza todavía** — no construir UI para él como si existiera hoy. Nota: `errorMapper.ts` en este repo aún no tiene una clase dedicada para `TOO_MANY_REQUESTS` (cae en `UnknownError` por el `default` del switch) — el código que lo necesite debe comprobar `error.httpStatus === 429` en vez de un `instanceof` específico (ver `RegisterPage.tsx`).
 
 ## 8. Trazabilidad — estado real
 
@@ -160,4 +202,5 @@ _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aq
 - **2026-08-21** — Feature `005-gestion-usuarios`: corrección del bug de códigos de permiso (§4, ya no reproduce, verificado en código real de `canchago`); documentados los quiebres reales de `GET /api/users` (`active=false`, `orderBy=name`, ver §6) y de `GET /api/roles` (nunca expone roles globales); registrada la dependencia de `canchago/spec/features/015-bootstrap-super-admin/` para que la protección contra escalamiento de privilegios sea real y no solo una ocultación de UI (§4).
 - **2026-08-21** — Feature `007-edicion-perfil-usuario-administracion`: añadido y verificado el subrecurso administrativo `/api/users/{userId}/profile`, con DTO mínimo, permisos `users.read`/`users.update`, lista blanca estricta, protección de usuarios de sistema y concurrencia optimista mediante `profileUpdatedAt`.
 - **2026-08-21** — Feature `009-perfil-ampliado-autogestion` y backend `017`: documentados los cinco métodos de perfil propio, campos opcionales, concurrencia, avatar WebP, límites y errores 413/415.
+- **2026-08-22** — Feature `008-registro-publico` y backend `016`: añadidos `POST /api/auth/register` (público, con rate limiting real) y los tres endpoints de `/api/organizaciones/access-requests` (§6.1); primer uso real de `TOO_MANY_REQUESTS` (429) en el backend, actualizada la nota de §7 en consecuencia.
 - **2026-08-14** — Feature `002-autenticacion`: contrato de auth (§2) **confirmado con prueba real** contra el backend corriendo local (Postgres nativo + Keycloak vía Docker + `yarn dev`), no solo leído. Flujo completo login → sesión → logout probado dos veces: primero con `curl` + cookie jar (usuario semilla `futbolista`/`canchago123`), después con Chrome headless real (Playwright) ejecutando el código real de `canchago-ionic`. Se corrigió la estrategia de "mismo origen" documentada en `tech-stack.md` §6 — la idea original (`Capacitor server.url` apuntando al backend) no es viable tal como estaba escrita; ver el post-mortem en ese documento. La solución real para desarrollo es un proxy de Vite; para el empaquetado nativo, el gap de §3 de este documento sigue abierto y sin resolver.

@@ -1,0 +1,96 @@
+.account-type-step {
+  display: grid;
+  gap: 14px;
+}
+
+.account-type-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 84px;
+  padding: 16px;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  color: inherit;
+  background: var(--app-color-surface-muted);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.account-type-card:hover,
+.account-type-card:focus-visible {
+  border-color: var(--app-color-brand);
+  background: var(--app-color-brand-soft);
+}
+
+.account-type-card__icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: var(--ion-color-primary-contrast);
+  background: var(--ion-color-primary);
+  font-size: 22px;
+}
+
+.account-type-card__copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.account-type-card__copy strong {
+  font-size: 1rem;
+}
+
+.account-type-card__copy small {
+  color: var(--app-color-text-muted);
+  line-height: 1.4;
+}
+
+.account-type-card__arrow {
+  color: var(--app-color-text-muted);
+  font-size: 18px;
+}
+
+.manager-register-form {
+  gap: 22px;
+}
+
+.manager-register-form__section {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.manager-register-form__section legend {
+  margin-bottom: 2px;
+  padding: 0;
+  color: var(--app-color-brand-strong);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.register-page__back {
+  margin: 4px 0 0;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--app-color-text-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.register-page__back:hover,
+.register-page__back:focus-visible {
+  color: var(--app-color-brand-strong);
+}

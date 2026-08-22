@@ -1,6 +1,7 @@
 import { Redirect } from 'react-router-dom';
 import { IonRouterOutlet } from '@ionic/react';
 import LoginPage from '../features/auth/pages/LoginPage';
+import RegisterPage from '../features/auth/pages/RegisterPage';
 import AdminLayout from '../layouts/AdminLayout';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
@@ -12,6 +13,9 @@ const AppRoutes: React.FC = () => (
   <IonRouterOutlet>
     <PublicRoute exact path="/login">
       <LoginPage />
+    </PublicRoute>
+    <PublicRoute exact path="/register">
+      <RegisterPage />
     </PublicRoute>
     <ProtectedRoute path="/admin">
       <AdminLayout />

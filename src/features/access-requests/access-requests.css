@@ -1,0 +1,33 @@
+.access-requests-page {
+  display: grid;
+  gap: 18px;
+}
+
+.access-requests-page > header p {
+  margin: 6px 0 0;
+  color: var(--app-color-text-muted);
+}
+
+.access-request-list-item {
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+}
+
+.access-request-list-item__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.access-request-list-item__header h2 {
+  margin: 0;
+}
+
+.access-request-list-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px -8px 0;
+}
