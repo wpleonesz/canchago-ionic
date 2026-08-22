@@ -1,8 +1,8 @@
-import { businessOutline, personCircleOutline, shieldCheckmarkOutline } from 'ionicons/icons';
+import { businessOutline, personCircleOutline } from 'ionicons/icons';
 import AppButton from '../components/common/AppButton';
 import AppPage from '../components/layout/AppPage';
-import PermissionGuard from '../features/auth/components/PermissionGuard';
-import RoleGuard from '../features/auth/components/RoleGuard';
+import { getFirstAdminPath } from '../features/admin/navigation/admin-capabilities';
+import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation';
 import { useLogoutMutation } from '../features/auth/hooks/useSession';
 import HomeActionCard from '../features/home/components/HomeActionCard';
 import ProfileSummary from '../features/home/components/ProfileSummary';
@@ -12,6 +12,7 @@ import './home.css';
 const Home: React.FC = () => {
   const user = useSessionStore(state => state.user);
   const logoutMutation = useLogoutMutation();
+  const adminPath = getFirstAdminPath(ADMIN_NAVIGATION, user?.permissions);
 
   return (
     <AppPage title="Inicio">
@@ -39,21 +40,17 @@ const Home: React.FC = () => {
                   description="Tu sesión está protegida y lista para usar."
                 />
 
-                <RoleGuard role="administrador">
+                {adminPath && (
                   <HomeActionCard
                     icon={businessOutline}
                     title="Acceso administrativo"
-                    description="Tu rol te permite acceder a herramientas de administración cuando estén disponibles."
-                  />
-                </RoleGuard>
-
-                <PermissionGuard permission="users.read">
-                  <HomeActionCard
-                    icon={shieldCheckmarkOutline}
-                    title="Consulta de usuarios"
-                    description="Tu cuenta tiene permiso de lectura de usuarios."
-                  />
-                </PermissionGuard>
+                    description="Gestiona únicamente los módulos habilitados para tu cuenta."
+                  >
+                    <AppButton fill="clear" routerLink={adminPath} routerDirection="forward">
+                      Abrir administración
+                    </AppButton>
+                  </HomeActionCard>
+                )}
               </div>
             </section>
           </>

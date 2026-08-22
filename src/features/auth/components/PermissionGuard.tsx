@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react';
+import { hasAnyPermission } from '../../admin/navigation/admin-capabilities';
 import { useSessionStore } from '../../../store/sessionStore';
 
 interface PermissionGuardProps {
@@ -9,9 +10,8 @@ interface PermissionGuardProps {
 const PermissionGuard: React.FC<PropsWithChildren<PermissionGuardProps>> = ({ permission, children }) => {
   const permissions = useSessionStore(state => state.user?.permissions ?? []);
   const required = Array.isArray(permission) ? permission : [permission];
-  const hasPermission = required.some(code => permissions.some(userPermission => userPermission.code === code));
 
-  return hasPermission ? <>{children}</> : null;
+  return hasAnyPermission(permissions, required) ? <>{children}</> : null;
 };
 
 export default PermissionGuard;

@@ -59,7 +59,11 @@ Los seis se descubrieron probando de verdad contra un emulador Android + Keycloa
 
 `middleware/access.ts` compara `req.user.permissions[].code` contra permisos requeridos por endpoint (ver §6 tabla de endpoints). El frontend refleja `SessionUser.permissions[]` para mostrar/ocultar UI, pero **nunca** decide autorización real — cada 403 del backend es la autoridad final.
 
-⚠️ **Bug conocido en el backend (roadmap `010`, abierto a 2026-08-14):** el middleware exige códigos `users.read`/`users.create`/`users.manage`, pero el catálogo sembrado usa `usuarios.read`/`usuarios.write`/`usuarios.delete` — ningún permiso real satisface hoy al módulo de usuarios (`/api/users` responde 403 siempre). **No implementar la pantalla de gestión de usuarios como "funcional" hasta que este bug se resuelva en `canchago`** — construir la UI pero marcarla explícitamente como bloqueada por este defecto en `roadmap.md`.
+✅ **Corrección (2026-08-21, discovery de la feature `005-gestion-usuarios` de este repo):** el bug descrito abajo (tachado) **ya no reproduce**. Se verificó leyendo directamente `canchago/prisma/seed.ts` y todas las rutas `pages/api/users/*`: el catálogo sembrado usa consistentemente `users.read`/`users.create`/`users.update`/`users.delete`/`users.manage`, exactamente los códigos que exige `middleware/access.ts` en esas rutas. `/api/users` funciona con los permisos correctos concedidos — probado end-to-end contra el backend real (feature backend `015-bootstrap-super-admin`). La feature `005` de este repo ya no está bloqueada por este motivo.
+
+~~⚠️ Bug conocido en el backend (roadmap `010`, abierto a 2026-08-14): el middleware exige códigos `users.read`/`users.create`/`users.manage`, pero el catálogo sembrado usa `usuarios.read`/`usuarios.write`/`usuarios.delete` — ningún permiso real satisface hoy al módulo de usuarios (`/api/users` responde 403 siempre). No implementar la pantalla de gestión de usuarios como "funcional" hasta que este bug se resuelva en `canchago`.~~
+
+⚠️ **Dependencia real pendiente para gestión de usuarios (feature `005` de este repo):** el backend permite hoy que cualquier usuario con `users.manage` asigne un rol marcado `isSystem: true` (como `Administrador`) a través de `POST/PATCH /api/users*` sin ninguna restricción adicional — un payload manipulado directamente podría escalar privilegios. La feature de backend `canchago/spec/features/015-bootstrap-super-admin/` corrige esto (guardias de escalamiento y de "último administrador"), pero **aún no está implementada**. Mientras tanto, `canchago-ionic` oculta los roles `isSystem` en la UI (que de todas formas nunca aparecen vía `GET /api/roles`, ver §6), pero esto es solo una capa de UX, no una garantía de seguridad del servidor.
 
 ## 5. Sin CORS
 
@@ -70,14 +74,19 @@ No hay `next.config.ts` con headers CORS ni `middleware.ts` raíz en `canchago`.
 | Recurso | Rutas | Métodos + permiso | Notas |
 |---|---|---|---|
 | Auth | `/api/auth/{login,callback,session,refresh,logout}` | ver §2 | público excepto session/refresh/logout |
-| Usuarios | `/api/users`, `/api/users/{userId}`, `/api/users/{userId}/roles`, `/api/users/{userId}/roles/{roleId}` | GET/POST/PATCH/DELETE, permisos `users.*` | ver bug §4; DELETE es soft (status→INACTIVE); lista NO incluye roles, detalle SÍ |
+| Usuarios | `/api/users`, `/api/users/{userId}`, `/api/users/{userId}/roles`, `/api/users/{userId}/roles/{roleId}` | GET/POST/PATCH/DELETE, permisos `users.*` | bug de §4 corregido; DELETE es soft (status→INACTIVE); lista NO incluye roles, detalle SÍ; ver quiebres reales abajo (`active`, `orderBy`) |
 | Organizaciones | `/api/organizaciones`, `/api/organizaciones/{organizationId}` | GET/POST/PATCH/DELETE, `organizaciones.read`/`.manage` | **lista responde `{organizations, meta}`, NO `{data, meta}`** — el propio Swagger del backend lo documenta mal, no confiar en `GET /api/docs` para este endpoint |
 | Sedes | `/api/organizaciones/{organizationId}/sedes`, `.../sedes/{sedeId}` | GET/POST/PATCH/DELETE, mismos permisos que organizaciones | **lista responde `{venues, meta}`, NO `{data, meta}`** — mismo bug de documentación |
-| Roles | `/api/roles`, `/api/roles/{roleId}`, `/api/roles/{roleId}/permisos` | GET/POST/PATCH/DELETE, `roles.read`/`.manage` | requieren `?organizationId=<uuid>` como query, NO como parte del path — fácil de olvidar |
+| Roles | `/api/roles`, `/api/roles/{roleId}`, `/api/roles/{roleId}/permisos` | GET/POST/PATCH/DELETE, `roles.read`/`.manage` | requieren `?organizationId=<uuid>` como query, NO como parte del path — fácil de olvidar; **nunca devuelve roles globales** (`organizationId: null`, como `Administrador`/`Futbolista`) — coincidencia estricta contra el `organizationId` dado, ver quiebre abajo |
 | Permisos | `/api/permisos` | GET, `permisos.read` | catálogo global, sin CRUD |
 | Docs | `/api/docs`, `/api/docs/spec` | público | Swagger UI real, útil para explorar pero no 100% confiable (ver bugs de envelope arriba) |
 
 **No existen** endpoints de canchas/recursos reservables ni reservas — ese dominio aún no está modelado en `canchago` (confirmado en `prisma/schema.prisma`). Cualquier feature de "buscar/reservar cancha" requiere trabajo previo de backend, fuera del alcance de este proyecto hasta que se construya allí.
+
+### Quiebres reales en `GET /api/users` (descubiertos por la feature `005-gestion-usuarios`, 2026-08-21)
+
+- **`active=false` no filtra a "solo inactivos".** El backend hace `status: filters.active ? 'ACTIVE' : undefined` — pasar `active=false` tiene el mismo efecto que omitir el parámetro (muestra todos los estados). `canchago-ionic` solo ofrece "Activos" (`active=true`) / "Todos" (parámetro omitido); nunca "solo inactivos".
+- **`orderBy=name` no es válido en el modelo real.** El schema Zod del backend permite `orderBy: 'name'|'email'|'createdAt'`, pero `User` no tiene columna `name` (vive partido en `UserProfile.firstName`/`lastName`) — usarlo dispara un error de Prisma devuelto como `500 INTERNAL_ERROR` genérico. `canchago-ionic` solo ofrece `email`/`createdAt` como ordenamiento.
 
 ## 7. Contrato de respuesta
 
@@ -111,4 +120,5 @@ El backend **no** devuelve `X-Request-ID`, `X-Correlation-ID` ni `traceparent` e
 _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aquí escrito, añadir una entrada fechada aquí antes de implementar._
 
 - **2026-08-14** — Discovery inicial. Documento creado a partir de lectura directa de `canchago` (auth, middleware, `pages/api/`, `prisma/schema.prisma`, validaciones Zod, `.env.example`).
+- **2026-08-21** — Feature `005-gestion-usuarios`: corrección del bug de códigos de permiso (§4, ya no reproduce, verificado en código real de `canchago`); documentados los quiebres reales de `GET /api/users` (`active=false`, `orderBy=name`, ver §6) y de `GET /api/roles` (nunca expone roles globales); registrada la dependencia de `canchago/spec/features/015-bootstrap-super-admin/` para que la protección contra escalamiento de privilegios sea real y no solo una ocultación de UI (§4).
 - **2026-08-14** — Feature `002-autenticacion`: contrato de auth (§2) **confirmado con prueba real** contra el backend corriendo local (Postgres nativo + Keycloak vía Docker + `yarn dev`), no solo leído. Flujo completo login → sesión → logout probado dos veces: primero con `curl` + cookie jar (usuario semilla `futbolista`/`canchago123`), después con Chrome headless real (Playwright) ejecutando el código real de `canchago-ionic`. Se corrigió la estrategia de "mismo origen" documentada en `tech-stack.md` §6 — la idea original (`Capacitor server.url` apuntando al backend) no es viable tal como estaba escrita; ver el post-mortem en ese documento. La solución real para desarrollo es un proxy de Vite; para el empaquetado nativo, el gap de §3 de este documento sigue abierto y sin resolver.

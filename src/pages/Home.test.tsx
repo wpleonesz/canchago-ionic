@@ -34,20 +34,20 @@ describe('Home', () => {
     expect(screen.getByRole('heading', { name: 'Hola, Mateo' })).toBeInTheDocument();
     expect(screen.getByText('mateo@canchago.local')).toBeInTheDocument();
     expect(screen.queryByText('Acceso administrativo')).not.toBeInTheDocument();
-    expect(screen.queryByText('Consulta de usuarios')).not.toBeInTheDocument();
+    expect(screen.queryByText('Abrir administración')).not.toBeInTheDocument();
   });
 
-  it('shows summaries allowed by the current role and permission', () => {
+  it('shows one administrative entry based on effective permissions, not the role name', () => {
     useSessionStore.getState().setSession({
       ...baseUser,
-      roles: [{ id: 'role-2', code: 'administrador', name: 'Administrador' }],
+      roles: [{ id: 'role-2', code: 'custom-manager', name: 'Gestor personalizado' }],
       permissions: [{ id: 'permission-1', code: 'users.read' }],
     });
 
     render(<Home />);
 
     expect(screen.getByText('Acceso administrativo')).toBeInTheDocument();
-    expect(screen.getByText('Consulta de usuarios')).toBeInTheDocument();
+    expect(screen.getByText('Abrir administración')).toBeInTheDocument();
   });
 
   it('triggers logout and exposes its pending state', () => {

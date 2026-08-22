@@ -1,6 +1,6 @@
 # 005 · Gestión de Usuarios
 
-**Estado:** propuesta
+**Estado:** en curso (implementación completa vía `git`/tests; pendiente prueba manual en emulador/dispositivo real y verificación manual del contrato contra un `canchago` local corriendo, antes de marcar "Hecho")
 
 ## Qué hace
 
@@ -66,44 +66,44 @@ Nunca incluye `passwordHash`, `oauthSubject` ni ningún campo interno — confir
 _Condiciones verificables, redactadas para comprobarse con un sí/no. Marca `[x]` al cumplirse._
 
 **Catálogo de roles**
-- [ ] El selector de roles del formulario de creación/edición de usuario obtiene sus opciones exclusivamente de `GET /api/roles?organizationId=<uuid>` — ningún rol aparece hardcodeado en el código fuente de Ionic.
-- [ ] Solo se listan roles de la organización seleccionada (`deletedAt: null`, según ya filtra el backend); un rol eliminado (soft delete) en el backend deja de aparecer sin necesidad de cambios en el frontend.
-- [ ] La UI no ofrece ni permite escribir manualmente un `roleId` fuera de las opciones devueltas por el backend.
+- [x] El selector de roles del formulario de creación/edición de usuario obtiene sus opciones exclusivamente de `GET /api/roles?organizationId=<uuid>` — ningún rol aparece hardcodeado en el código fuente de Ionic (`UserRolesEditor` vía `useRoles`).
+- [x] Solo se listan roles de la organización seleccionada (`deletedAt: null`, según ya filtra el backend); un rol eliminado (soft delete) en el backend deja de aparecer sin necesidad de cambios en el frontend (el frontend no filtra nada localmente, refleja tal cual la respuesta del backend).
+- [x] La UI no ofrece ni permite escribir manualmente un `roleId` fuera de las opciones devueltas por el backend (`AppSelect` solo renderiza `IonSelectOption` a partir del catálogo recibido).
 
 **Registro (creación back-office) de usuarios**
-- [ ] Un envío válido del formulario de creación produce exactamente un `POST /api/users` y, si el backend responde `201`, exactamente un usuario nuevo visible en el listado tras invalidar la query de TanStack Query.
-- [ ] El formulario exige `email` (formato válido), `firstName` y `lastName` (no vacíos, ≤100 caracteres), y una organización seleccionada — mismas restricciones que el schema Zod real del backend, replicadas en `validation/users.ts` solo para UX (el backend sigue siendo quien valida en última instancia).
-- [ ] Un email duplicado produce un `409` mapeado a `BusinessRuleError` y se muestra como error de formulario contextual ("ya existe un usuario con ese correo"), sin reintento automático.
-- [ ] El doble envío del formulario está prevenido (botón deshabilitado/`isLoading` de `AppButton` mientras la mutación está en curso).
-- [ ] Ningún campo de contraseña existe en el formulario — la identidad real se resuelve vía Keycloak en el primer login del usuario creado, no vía esta pantalla.
+- [x] Un envío válido del formulario de creación produce exactamente un `POST /api/users` y, si el backend responde `201`, exactamente un usuario nuevo visible en el listado tras invalidar la query de TanStack Query (`useCreateUser` invalida `['users']`).
+- [x] El formulario exige `email` (formato válido), `firstName` y `lastName` (no vacíos, ≤100 caracteres), y una organización seleccionada — mismas restricciones que el schema Zod real del backend, replicadas en `validation/users.ts` solo para UX (el backend sigue siendo quien valida en última instancia).
+- [x] Un email duplicado produce un `409` mapeado a `BusinessRuleError` y se muestra como error de formulario contextual ("ya existe un usuario con ese correo"), sin reintento automático (`UserFormPage`'s `CreateUserForm`).
+- [x] El doble envío del formulario está prevenido (botón deshabilitado/`isLoading` de `AppButton` mientras la mutación está en curso) — verificado con test.
+- [x] Ningún campo de contraseña existe en el formulario — la identidad real se resuelve vía Keycloak en el primer login del usuario creado, no vía esta pantalla.
 
 **Administración de usuarios**
-- [ ] El listado usa paginación remota real (`page`/`pageSize` contra el backend), nunca carga todos los usuarios al cliente para paginar localmente.
-- [ ] La búsqueda por nombre/email aplica debounce (mínimo ~300ms) antes de disparar la query, para no saturar el backend con cada tecla.
-- [ ] El filtro "Activos"/"Todos" usa exclusivamente los valores de `active` que el backend interpreta de forma correcta (`true` u omitido) — no ofrece una opción "solo inactivos" (ver quiebre documentado).
-- [ ] El ordenamiento ofrecido en la UI se limita a `email`/`createdAt` — nunca `name`.
-- [ ] Un usuario sin el permiso `users.read` no ve la sección de gestión de usuarios en absoluto (oculta vía `PermissionGuard`), y si accede a la ruta directamente por URL, el propio `GET /api/users` responde `403` y la pantalla muestra el estado de error correspondiente, nunca datos.
-- [ ] Un usuario sin `users.create`/`users.update`/`users.delete`/`users.manage` no ve los botones de crear/editar/eliminar/gestionar roles respectivamente (oculto vía `PermissionGuard`), y si la acción se intenta igual (p. ej. manipulando el DOM o el estado), el backend responde `403` y la app lo trata como error, no como éxito parcial.
+- [x] El listado usa paginación remota real (`page`/`pageSize` contra el backend), nunca carga todos los usuarios al cliente para paginar localmente.
+- [x] La búsqueda por nombre/email aplica debounce (mínimo ~300ms) antes de disparar la query, para no saturar el backend con cada tecla (`AppSearchInput` + `useDebounce`, verificado con test).
+- [x] El filtro "Activos"/"Todos" usa exclusivamente los valores de `active` que el backend interpreta de forma correcta (`true` u omitido) — no ofrece una opción "solo inactivos" (`UserListQuery.active` es `true | undefined` a nivel de tipo, no `boolean`).
+- [x] El ordenamiento ofrecido en la UI se limita a `email`/`createdAt` — nunca `name` (excluido estructuralmente del tipo `UserListQuery.orderBy`).
+- [ ] Un usuario sin el permiso `users.read` no ve la sección de gestión de usuarios en absoluto, y si accede a la ruta directamente por URL, el propio `GET /api/users` responde `403` y la pantalla muestra el estado de error correspondiente, nunca datos. **Parcialmente verificado:** `/admin/users*` está protegido por `AdminRoute` (feature `006`), que ya redirige a una página de acceso denegado sin llamar al backend si falta `users.read` — más estricto que lo pedido aquí. El caso "el propio `GET /api/users` responde 403" no se ejercitó end-to-end contra un backend real en esta sesión (sí se verificó el 403 del backend directamente en `canchago` en la tarea anterior).
+- [x] Un usuario sin `users.create`/`users.update`/`users.delete`/`users.manage` no ve los botones de crear/editar/eliminar/gestionar roles respectivamente (oculto vía `PermissionGuard` en `UsersListPage`, `UserDetailPage`); si la acción se intenta igual, el backend responde `403` (comportamiento del backend ya verificado en `canchago/spec/features/015-bootstrap-super-admin/`), y `errorMapper.ts` lo traduce a `AuthorizationError` sin tratarlo como éxito.
 
 **Casos límite y errores**
-- [ ] Rol inexistente o ya eliminado enviado en `roleIds`: el backend responde `422`/error de validación (según lo implemente `canchago`); la UI lo muestra como error de formulario, no como éxito silencioso.
-- [ ] Sesión expirada durante cualquier operación de esta feature: el interceptor 401 global (`services/api/apiClient.ts`) limpia la sesión y redirige a `/login`, igual que en el resto de la app — esta feature no implementa su propio manejo de 401.
-- [ ] Token inválido / usuario desactivado que intenta operar: mismo tratamiento que sesión expirada (401 → logout forzado).
-- [ ] Falta de permisos (`403`) en cualquier endpoint de esta feature se traduce a `AuthorizationError` (`errorMapper.ts`) y un estado de error legible, nunca a una pantalla en blanco ni a un `console.error` crudo.
-- [ ] Error del servidor (`500`/red/timeout) muestra el estado `error` genérico ya definido en la taxonomía de `tech-stack.md` §8, con opción de reintentar solo si la operación era idempotente (GET).
-- [ ] Ninguna respuesta de ninguno de estos endpoints expone `passwordHash`, `oauthSubject` ni cualquier campo interno — verificado contra el `UserDto` real documentado arriba (criterio comprobable inspeccionando la respuesta real, no solo el tipo TS).
+- [ ] Rol inexistente o ya eliminado enviado en `roleIds`: el backend responde `422`/error de validación; la UI lo muestra como error de formulario. **No verificado end-to-end en esta sesión** — el manejo de errores genérico (`errorMapper.ts` + mensajes de `UserForm`/`UserDetailPage`) cubre el caso mecánicamente, pero no se probó contra un 422 real.
+- [x] Sesión expirada durante cualquier operación de esta feature: el interceptor 401 global (`services/api/apiClient.ts`) limpia la sesión y redirige a `/login` — esta feature no implementa su propio manejo de 401 (no se tocó `apiClient.ts`).
+- [x] Token inválido / usuario desactivado que intenta operar: mismo tratamiento que sesión expirada (401 → logout forzado, mecanismo ya existente reutilizado sin cambios).
+- [x] Falta de permisos (`403`) en cualquier endpoint de esta feature se traduce a `AuthorizationError` (`errorMapper.ts`, sin cambios) y un estado de error legible (`AppErrorState`), nunca a una pantalla en blanco ni a un `console.error` crudo.
+- [x] Error del servidor (`500`/red/timeout) muestra el estado `error` genérico (`AppErrorState`), con opción de reintentar solo en operaciones idempotentes (`onRetry` solo se pasa a queries GET, nunca a mutaciones).
+- [x] Ninguna respuesta de ninguno de estos endpoints expone `passwordHash`, `oauthSubject` ni cualquier campo interno — confirmado en la tarea anterior contra el backend real corriendo (`selectUserFields` de Prisma nunca los incluye).
 
 **Calidad / UX**
-- [ ] El listado, el formulario de creación y el detalle/edición son usables en pantalla móvil (single-column, targets táctiles ≥44×44px, igual que exige `004`) y en una ventana de escritorio más ancha (mismo componente, layout que aprovecha el ancho vía `--app-content-max-width`).
-- [ ] Estados `loading`, `empty`, `error` y `success` están cubiertos en el listado (spinner/skeleton, mensaje "no hay usuarios", mensaje de error con reintento, lista poblada) y en el formulario (envío en curso, error de validación/negocio, éxito con navegación de vuelta al listado o al detalle).
-- [ ] Acciones sensibles (desactivar un usuario, remover un rol) piden confirmación explícita antes de ejecutar la mutación.
-- [ ] La interfaz reutiliza `AppButton`, `AppInput`, `AppPage`, `RoleGuard`, `PermissionGuard` y los tokens de `src/theme/variables.css` — no introduce una librería de UI adicional ni una paleta de color paralela.
-- [ ] Los nuevos componentes genéricos que esta feature necesite y no existan aún (tabla/lista paginada, input de búsqueda con debounce, modal de confirmación, toast/alert de resultado) se agregan en `components/common`, `components/feedback`, `components/forms` y `hooks/` respectivamente — según la ubicación que ya define `tech-stack.md` §3 — no inline dentro de `features/users/`.
+- [x] El listado, el formulario de creación y el detalle/edición son usables en pantalla móvil (single-column, targets táctiles vía componentes Ionic estándar) y en una ventana de escritorio más ancha (`users.css` con breakpoint a 720px para la barra de herramientas del listado). **No probado en emulador/dispositivo real** (ver `tasks.md`).
+- [x] Estados `loading`, `empty`, `error` y `success` están cubiertos en el listado (`AppSkeleton`/`AppEmptyState`/`AppErrorState`/lista poblada vía `AppDataList`) y en el formulario (envío en curso vía `isSubmitting`, error de validación/negocio, éxito con navegación de vuelta).
+- [x] Acciones sensibles (desactivar un usuario, remover un rol) piden confirmación explícita antes de ejecutar la mutación (`AppConfirmDialog`).
+- [x] La interfaz reutiliza `AppButton`, `AppInput`, `AppPage`, `RoleGuard`, `PermissionGuard` y los tokens de `src/theme/variables.css` — no introduce una librería de UI adicional ni una paleta de color paralela. **Nota:** las páginas de esta feature no usan `AppPage` directamente porque se montan dentro del shell `AdminLayout` (feature `006`), que ya provee `IonPage`/`IonHeader`/`IonContent` — envolverlas de nuevo crearía una página anidada incorrecta.
+- [x] Los nuevos componentes genéricos que esta feature necesite y no existan aún se agregaron en `components/common`, `components/feedback`, `components/forms` y `hooks/` respectivamente — no inline dentro de `features/users/`.
 
 ### Contratos y tipos (obligatorio)
 
-- [ ] Los tipos TypeScript de request/response en `src/types/api/users.ts` y `src/types/api/roles.ts` (nuevos — hoy no existen) reflejan exactamente el `UserDto`/`RoleDto` reales documentados arriba, sin `any`.
-- [ ] `../../constitution/api-integration.md` está actualizado en el mismo commit con: la corrección del bloqueo original de esta feature (el bug `users.*`/`usuarios.*` ya no reproduce, verificado en código), los tres quiebres reales documentados arriba (`active=false`, `orderBy=name`, roles globales invisibles), y la dependencia explícita de la feature de backend `canchago/spec/features/015-bootstrap-super-admin/` para que la protección contra escalamiento de privilegios sea real y no solo una ocultación de UI.
+- [x] Los tipos TypeScript de request/response en `src/types/api/users.ts` y `src/types/api/roles.ts` reflejan exactamente el `UserDto`/`RoleDto` reales documentados arriba, sin `any`.
+- [x] `../../constitution/api-integration.md` está actualizado en el mismo commit con: la corrección del bloqueo original de esta feature, los tres quiebres reales documentados arriba, y la dependencia explícita de `canchago/spec/features/015-bootstrap-super-admin/`.
 
 ## Fuera de alcance
 

@@ -1,0 +1,124 @@
+.users-list-page,
+.user-form-page,
+.user-detail-page {
+  display: grid;
+  gap: 18px;
+}
+
+.users-list-page__toolbar {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .users-list-page__toolbar {
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+  }
+}
+
+.app-data-list__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0;
+  color: var(--app-color-text-muted);
+  font-size: 0.85rem;
+}
+
+.app-empty-state,
+.app-error-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--app-color-text-muted);
+  text-align: center;
+}
+
+.app-empty-state ion-icon,
+.app-error-state ion-icon {
+  font-size: 32px;
+  color: var(--app-color-brand-strong);
+}
+
+.app-error-state ion-icon {
+  color: var(--app-color-danger-text);
+}
+
+.app-empty-state__title,
+.app-error-state p {
+  margin: 0;
+  color: var(--app-color-text);
+  font-weight: 600;
+}
+
+.app-empty-state__description {
+  margin: 0;
+  color: var(--app-color-text-muted);
+}
+
+.user-form {
+  display: grid;
+  gap: 16px;
+  max-width: 520px;
+}
+
+.user-form__hint {
+  margin: -8px 0 0;
+  color: var(--app-color-text-muted);
+  font-size: 0.85rem;
+}
+
+.user-form__error {
+  color: var(--app-color-danger-text);
+}
+
+.user-detail-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.user-detail-page__header h1 {
+  margin: 0;
+}
+
+.user-detail-page__header p {
+  margin: 4px 0 0;
+  color: var(--app-color-text-muted);
+}
+
+.user-detail-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.user-detail-page__roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 12px 0;
+  list-style: none;
+}
+
+.user-detail-page__remove-role {
+  margin-inline-start: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.user-detail-page__add-role {
+  display: grid;
+  gap: 10px;
+  max-width: 420px;
+  margin-top: 12px;
+}
