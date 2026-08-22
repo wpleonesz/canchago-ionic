@@ -48,7 +48,7 @@ Ionic y Capacitor no se instalan de la misma manera en este proyecto:
 | Capacitor CLI (`cap`)            | No                            | `yarn install` instala `@capacitor/cli` 8.5.0 como dependencia de desarrollo |
 | Capacitor Android/iOS            | No globalmente                | `yarn install` instala `@capacitor/android` y `@capacitor/ios` 8.5.0         |
 
-Por tanto, **no ejecute** `npm install -g @ionic/cli` ni `npm install -g @capacitor/cli` para preparar este repositorio. Una instalación global podría usar una versión distinta de la fijada en `yarn.lock`. Los scripts `yarn android`, `yarn ios` y `yarn cap:sync` resuelven automáticamente el ejecutable local `cap`.
+Por tanto, **no ejecute** `npm install -g @ionic/cli` ni `npm install -g @capacitor/cli` para preparar este repositorio. Una instalación global podría usar una versión distinta de la fijada en `yarn.lock`. Los scripts `yarn android:run`, `yarn ios` y `yarn cap:sync` resuelven automáticamente el ejecutable local `cap`.
 
 Después de `yarn install`, compruebe la CLI local de Capacitor:
 
@@ -63,7 +63,7 @@ No existe un comando `ionic` necesario para el flujo normal. Sus equivalencias e
 | Servidor de desarrollo   | `yarn dev`                   |
 | Build web para Capacitor | `yarn build`                 |
 | Sincronizar plataformas  | `yarn cap:sync`              |
-| Abrir Android            | `yarn android`               |
+| Ejecutar Android         | `yarn android:run`           |
 | Abrir iOS                | `yarn ios`                   |
 
 ### Adicional para Android
@@ -172,19 +172,23 @@ Detenga cada servidor con `Ctrl+C`; Keycloak puede detenerse desde el backend co
 
 Para un dispositivo físico, computador y teléfono deben estar en la misma red y el firewall debe permitir el puerto 3000. No use `0.0.0.0` como URL del cliente: es una dirección de escucha, no de destino. En producción use HTTPS.
 
-### Construir y abrir
+### Ejecutar la app: por qué usamos solo `yarn android:run`
 
 Con el backend y un emulador/dispositivo activos:
 
 ```bash
-yarn android
-```
-
-Este script construye Vite, sincroniza `dist/` y plugins con Android, y abre Android Studio. Seleccione el dispositivo y ejecute la configuración `app`. Alternativamente:
-
-```bash
 yarn android:run
 ```
+
+Este es el comando habitual y único para ejecutar Android durante el laboratorio porque realiza el flujo completo en orden:
+
+1. `vite build` genera el bundle web actualizado en `dist/` usando el entorno de producción local.
+2. `cap sync android` copia ese bundle y la configuración al proyecto nativo, y sincroniza los plugins.
+3. `cap run android` compila, instala y abre la aplicación en el emulador o dispositivo detectado.
+
+Usar siempre `yarn android:run` evita tres errores frecuentes: ejecutar una versión antigua de `dist/`, olvidar sincronizar un plugin y abrir Android Studio sin haber reconstruido la aplicación. Además, produce el mismo procedimiento reproducible para todos los estudiantes y permite detectar fallos desde la terminal.
+
+El script `yarn android` también existe, pero termina abriendo Android Studio y exige seleccionar y ejecutar manualmente la configuración `app`; no se usa en el flujo normal del laboratorio. Android Studio sigue siendo obligatorio para instalar el SDK, crear/administrar emuladores e investigar errores nativos. `yarn android:open` se reserva únicamente para ese diagnóstico manual.
 
 Para comprobar conexión:
 
@@ -252,20 +256,21 @@ No edite archivos generados dentro de `android/app/src/main/assets/public/` o `i
 
 ## Comandos
 
-| Comando                               | Función                                              |
-| ------------------------------------- | ---------------------------------------------------- |
-| `yarn dev`                            | Vite en 5173 con recarga y proxy API                 |
-| `yarn build`                          | TypeScript + bundle Vite en `dist/`                  |
-| `yarn preview`                        | Previsualiza el bundle; no reemplaza pruebas nativas |
-| `yarn lint`                           | ESLint                                               |
-| `yarn typecheck`                      | TypeScript sin emisión                               |
-| `yarn format` / `yarn format:check`   | Escribe / comprueba Prettier                         |
-| `yarn test` / `yarn test:watch`       | Vitest una vez / observación                         |
-| `yarn test:e2e`                       | Suite Cypress configurada por el proyecto            |
-| `yarn cap:sync`                       | Copia bundle/config y actualiza plugins nativos      |
-| `yarn android` / `yarn android:run`   | Abre Android Studio / ejecuta Android                |
-| `yarn ios` / `yarn ios:run`           | Abre Xcode / ejecuta iOS                             |
-| `yarn android:open` / `yarn ios:open` | Abre el proyecto sin reconstruir                     |
+| Comando                               | Función                                                      |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `yarn dev`                            | Vite en 5173 con recarga y proxy API                         |
+| `yarn build`                          | TypeScript + bundle Vite en `dist/`                          |
+| `yarn preview`                        | Previsualiza el bundle; no reemplaza pruebas nativas         |
+| `yarn lint`                           | ESLint                                                       |
+| `yarn typecheck`                      | TypeScript sin emisión                                       |
+| `yarn format` / `yarn format:check`   | Escribe / comprueba Prettier                                 |
+| `yarn test` / `yarn test:watch`       | Vitest una vez / observación                                 |
+| `yarn test:e2e`                       | Suite Cypress configurada por el proyecto                    |
+| `yarn cap:sync`                       | Copia bundle/config y actualiza plugins nativos              |
+| `yarn android:run`                    | Flujo habitual: build, sync, compila, instala y abre Android |
+| `yarn android` / `yarn android:open`  | Uso diagnóstico: abre Android Studio                         |
+| `yarn ios` / `yarn ios:run`           | Abre Xcode / ejecuta iOS                                     |
+| `yarn android:open` / `yarn ios:open` | Abre el proyecto sin reconstruir                             |
 
 ## Solución de problemas
 
@@ -295,7 +300,7 @@ Abra el proyecto con `yarn ios:open`, seleccione un equipo de firma para disposi
 
 ### El cambio no aparece en la app nativa
 
-`yarn dev` solo actualiza el navegador. Ejecute nuevamente `yarn android`/`yarn ios`, o `yarn build && yarn cap:sync` antes de abrir la plataforma.
+`yarn dev` solo actualiza el navegador. Para Android ejecute nuevamente `yarn android:run`; para iOS use `yarn ios:run`. Si solo necesita sincronizar sin ejecutar, use `yarn build && yarn cap:sync`.
 
 ## Seguridad y límites
 
