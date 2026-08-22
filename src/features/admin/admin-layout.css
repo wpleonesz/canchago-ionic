@@ -298,11 +298,52 @@
   font-size: 1.25rem;
 }
 
-.profile-summary__identity > p:last-child {
-  margin: 5px 0 0;
-  overflow-wrap: anywhere;
+.profile-summary__identity .app-button {
+  margin: 5px 0 0 -10px;
+}
+
+.profile-summary__contact {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+}
+
+.profile-summary__contact-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
   color: var(--app-color-text-muted);
   font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.profile-summary__contact-item span {
+  overflow-wrap: anywhere;
+}
+.profile-summary__contact-item ion-icon {
+  flex: 0 0 auto;
+  color: var(--app-color-brand-strong);
+  font-size: 1.05rem;
+}
+
+.profile-summary__social {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-summary__social a {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--app-color-border);
+  border-radius: 50%;
+  color: var(--app-color-brand-strong);
+  background: var(--app-color-brand-soft);
+  font-size: 1.2rem;
 }
 
 .profile-summary__roles {
@@ -352,9 +393,13 @@
   }
 
   .admin-dashboard .profile-summary__roles {
-    grid-column: auto;
-    justify-content: flex-end;
-    padding-top: 0;
+    justify-content: flex-start;
+  }
+
+  .admin-dashboard .profile-summary__contact,
+  .admin-dashboard .profile-summary__social,
+  .admin-dashboard .profile-summary__roles {
+    grid-column: 2 / -1;
   }
 }
 

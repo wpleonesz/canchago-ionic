@@ -117,6 +117,14 @@ El PATCH acepta únicamente `{ firstName?, lastName?, expectedProfileUpdatedAt }
 
 Email, username, identificación, estado, roles, permisos, contraseñas, hashes, tokens e IDs no pertenecen a este contrato. El backend rechaza esos campos en vez de ignorarlos. La respuesta no incluye identificación, RBAC ni información de autenticación.
 
+### Perfil propio ampliado (feature `009`, backend `017`, 2026-08-21)
+
+`GET/PATCH /api/profile` y `GET/PUT/DELETE /api/profile/avatar` requieren sesión pero no permisos administrativos. No reciben `userId`: el backend usa exclusivamente `req.user.id`, por lo que cambiar query o payload no selecciona otro perfil.
+
+El DTO textual contiene `phone`, los siete enlaces opcionales, `hasAvatar`, `avatarUpdatedAt` y `profileUpdatedAt`. El PATCH convierte vacíos en `null`, exige `expectedProfileUpdatedAt` y rechaza claves desconocidas; un timestamp obsoleto responde `409 CONFLICT`.
+
+El PUT recibe `{ imageBase64, mimeType }`, admite JPEG/PNG/WebP reales hasta 2 MiB y el servidor normaliza a WebP de máximo 1024×1024. Tamaño excesivo responde `413 PAYLOAD_TOO_LARGE`; contenido inválido o discordante, `415 UNSUPPORTED_MEDIA_TYPE`. GET usa caché privada, ETag y `nosniff`; DELETE es idempotente.
+
 ## 7. Contrato de respuesta
 
 ```json
@@ -151,4 +159,5 @@ _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aq
 - **2026-08-14** — Discovery inicial. Documento creado a partir de lectura directa de `canchago` (auth, middleware, `pages/api/`, `prisma/schema.prisma`, validaciones Zod, `.env.example`).
 - **2026-08-21** — Feature `005-gestion-usuarios`: corrección del bug de códigos de permiso (§4, ya no reproduce, verificado en código real de `canchago`); documentados los quiebres reales de `GET /api/users` (`active=false`, `orderBy=name`, ver §6) y de `GET /api/roles` (nunca expone roles globales); registrada la dependencia de `canchago/spec/features/015-bootstrap-super-admin/` para que la protección contra escalamiento de privilegios sea real y no solo una ocultación de UI (§4).
 - **2026-08-21** — Feature `007-edicion-perfil-usuario-administracion`: añadido y verificado el subrecurso administrativo `/api/users/{userId}/profile`, con DTO mínimo, permisos `users.read`/`users.update`, lista blanca estricta, protección de usuarios de sistema y concurrencia optimista mediante `profileUpdatedAt`.
+- **2026-08-21** — Feature `009-perfil-ampliado-autogestion` y backend `017`: documentados los cinco métodos de perfil propio, campos opcionales, concurrencia, avatar WebP, límites y errores 413/415.
 - **2026-08-14** — Feature `002-autenticacion`: contrato de auth (§2) **confirmado con prueba real** contra el backend corriendo local (Postgres nativo + Keycloak vía Docker + `yarn dev`), no solo leído. Flujo completo login → sesión → logout probado dos veces: primero con `curl` + cookie jar (usuario semilla `futbolista`/`canchago123`), después con Chrome headless real (Playwright) ejecutando el código real de `canchago-ionic`. Se corrigió la estrategia de "mismo origen" documentada en `tech-stack.md` §6 — la idea original (`Capacitor server.url` apuntando al backend) no es viable tal como estaba escrita; ver el post-mortem en ese documento. La solución real para desarrollo es un proxy de Vite; para el empaquetado nativo, el gap de §3 de este documento sigue abierto y sin resolver.

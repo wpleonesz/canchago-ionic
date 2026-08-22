@@ -68,3 +68,36 @@ export interface UpdateAdminUserProfileRequest {
   lastName?: string;
   expectedProfileUpdatedAt: string;
 }
+
+export interface OwnUserProfileDto {
+  phone: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  linkedinUrl: string | null;
+  xUrl: string | null;
+  githubUrl: string | null;
+  tiktokUrl: string | null;
+  websiteUrl: string | null;
+  hasAvatar: boolean;
+  avatarUpdatedAt: string | null;
+  profileUpdatedAt: string;
+}
+
+export type OwnProfileField =
+  | 'phone'
+  | 'facebookUrl'
+  | 'instagramUrl'
+  | 'linkedinUrl'
+  | 'xUrl'
+  | 'githubUrl'
+  | 'tiktokUrl'
+  | 'websiteUrl';
+
+export type UpdateOwnUserProfileRequest = Partial<Record<OwnProfileField, string | null>> & {
+  expectedProfileUpdatedAt: string;
+};
+
+export interface UpdateOwnAvatarRequest {
+  imageBase64: string;
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp';
+}

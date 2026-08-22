@@ -17,6 +17,7 @@ import AdminNotFoundPage from '../features/admin/pages/AdminNotFoundPage';
 import { filterAdminNavigation, findActiveAdminItem } from '../features/admin/navigation/admin-capabilities';
 import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation';
 import UsersModule from '../features/users/pages/UsersModule';
+import OwnProfilePage from '../features/users/pages/OwnProfilePage';
 import AdminRoute from '../routes/AdminRoute';
 import { useSessionStore } from '../store/sessionStore';
 import '../features/admin/admin-layout.css';
@@ -26,7 +27,7 @@ const AdminLayout: React.FC = () => {
   const permissions = useSessionStore(state => state.user?.permissions);
   const groups = useMemo(() => filterAdminNavigation(ADMIN_NAVIGATION, permissions), [permissions]);
   const activeItem = findActiveAdminItem(groups, location.pathname);
-  const pageTitle = location.pathname === '/admin' ? 'Inicio' : (activeItem?.label ?? 'Administración');
+  const pageTitle = location.pathname === '/admin' ? 'Inicio' : location.pathname === '/admin/profile' ? 'Mi perfil' : (activeItem?.label ?? 'Administración');
 
   return (
     <IonSplitPane contentId="admin-content" when="(min-width: 900px)" className="admin-shell">
@@ -49,6 +50,9 @@ const AdminLayout: React.FC = () => {
                   concretos de abajo sí exigen su propio permiso. */}
               <Route exact path="/admin">
                 <AdminDashboardPage groups={groups} />
+              </Route>
+              <Route exact path="/admin/profile">
+                <OwnProfilePage />
               </Route>
               <Route path="/admin/users">
                 <UsersModule />

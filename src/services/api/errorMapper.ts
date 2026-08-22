@@ -38,6 +38,9 @@ export class ServerError extends AppClientError {
   readonly code = 'INTERNAL_ERROR';
 }
 
+export class PayloadTooLargeError extends AppClientError { readonly code = 'PAYLOAD_TOO_LARGE'; }
+export class UnsupportedMediaTypeError extends AppClientError { readonly code = 'UNSUPPORTED_MEDIA_TYPE'; }
+
 export class NetworkError extends AppClientError {
   readonly code = 'NETWORK_ERROR';
 }
@@ -71,6 +74,10 @@ const buildFromBackendCode = (
       return new NotFoundError(message, httpStatus, details);
     case 'CONFLICT':
       return new BusinessRuleError(message, httpStatus, details);
+    case 'PAYLOAD_TOO_LARGE':
+      return new PayloadTooLargeError(message, httpStatus, details);
+    case 'UNSUPPORTED_MEDIA_TYPE':
+      return new UnsupportedMediaTypeError(message, httpStatus, details);
     case 'INTERNAL_ERROR':
     case 'METHOD_NOT_ALLOWED':
       return new ServerError(message, httpStatus, details);

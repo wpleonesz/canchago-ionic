@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { useSessionStore } from '../../../store/sessionStore';
@@ -20,6 +21,10 @@ afterEach(() => {
 });
 
 describe('AdminDashboardPage', () => {
+	const renderDashboard = (groups: Parameters<typeof AdminDashboardPage>[0]['groups']) => {
+		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+		return render(<QueryClientProvider client={client}><MemoryRouter><AdminDashboardPage groups={groups} /></MemoryRouter></QueryClientProvider>);
+	};
   it('shows the profile summary and a safe empty state when the user has no administrative capabilities', () => {
     useSessionStore.getState().setSession({
       id: 'user-1',
@@ -29,11 +34,7 @@ describe('AdminDashboardPage', () => {
       permissions: [],
     });
 
-    render(
-      <MemoryRouter>
-        <AdminDashboardPage groups={[]} />
-      </MemoryRouter>,
-    );
+    renderDashboard([]);
 
     expect(screen.getByRole('heading', { name: 'Hola, Player' })).toBeInTheDocument();
     expect(screen.getByText('player@example.com')).toBeInTheDocument();
@@ -50,11 +51,7 @@ describe('AdminDashboardPage', () => {
       permissions,
     });
 
-    render(
-      <MemoryRouter>
-        <AdminDashboardPage groups={filterAdminNavigation(ADMIN_NAVIGATION, permissions)} />
-      </MemoryRouter>,
-    );
+    renderDashboard(filterAdminNavigation(ADMIN_NAVIGATION, permissions));
 
     expect(screen.getByRole('link', { name: /organizaciones y sedes/i })).toHaveAttribute(
       'href',
@@ -73,12 +70,9 @@ describe('AdminDashboardPage', () => {
     });
     isPending = true;
 
-    const { container } = render(
-      <MemoryRouter>
-        <AdminDashboardPage groups={[]} />
-      </MemoryRouter>,
-    );
-    const button = container.querySelector('ion-button');
+    const { container } = renderDashboard([]);
+    const buttons = container.querySelectorAll('ion-button');
+    const button = buttons.item(buttons.length - 1);
 
     expect(button).not.toBeNull();
     expect(button?.disabled).toBe(true);

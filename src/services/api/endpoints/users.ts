@@ -9,6 +9,9 @@ import type {
   UserListQuery,
   UserListResponse,
   UserRoleDto,
+  OwnUserProfileDto,
+  UpdateOwnAvatarRequest,
+  UpdateOwnUserProfileRequest,
 } from '../../../types/api/users';
 
 export const getUsers = async (query: UserListQuery): Promise<UserListResponse> => {
@@ -60,4 +63,27 @@ export const assignUserRoles = async (userId: string, roleIds: string[]): Promis
 
 export const removeUserRole = async (userId: string, roleId: string): Promise<void> => {
   await apiClient.delete(`/users/${userId}/roles/${roleId}`);
+};
+
+export const getOwnProfile = async (): Promise<OwnUserProfileDto> => {
+  const { data } = await apiClient.get<ApiSuccessEnvelope<OwnUserProfileDto>>('/profile');
+  return data.data;
+};
+
+export const updateOwnProfile = async (body: UpdateOwnUserProfileRequest): Promise<OwnUserProfileDto> => {
+  const { data } = await apiClient.patch<ApiSuccessEnvelope<OwnUserProfileDto>>('/profile', body);
+  return data.data;
+};
+
+export const getOwnAvatar = async (): Promise<Blob> => {
+  const { data } = await apiClient.get<Blob>('/profile/avatar', { responseType: 'blob' });
+  return data;
+};
+
+export const updateOwnAvatar = async (body: UpdateOwnAvatarRequest): Promise<void> => {
+  await apiClient.put('/profile/avatar', body);
+};
+
+export const removeOwnAvatar = async (): Promise<void> => {
+  await apiClient.delete('/profile/avatar');
 };
