@@ -25,7 +25,7 @@ describe('AdminDashboardPage', () => {
 		const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		return render(<QueryClientProvider client={client}><MemoryRouter><AdminDashboardPage groups={groups} /></MemoryRouter></QueryClientProvider>);
 	};
-  it('shows the profile summary and a safe empty state when the user has no administrative capabilities', () => {
+  it('shows the profile summary and a neutral (non-admin-framed) empty state for a plain user without modules', () => {
     useSessionStore.getState().setSession({
       id: 'user-1',
       email: 'player@example.com',
@@ -38,7 +38,10 @@ describe('AdminDashboardPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Hola, Player' })).toBeInTheDocument();
     expect(screen.getByText('player@example.com')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('no tiene capacidades administrativas');
+    // No debe mencionar "administrativo"/"capacidades administrativas": una cuenta Futbolista o
+    // Gestor de Cancha recién aprobada nunca tendrá módulos y no le falta ningún permiso.
+    expect(screen.queryByText(/administrativ/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Todo en orden');
   });
 
   it('renders only the authorized modules as client-side links', () => {

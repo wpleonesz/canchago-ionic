@@ -19,6 +19,12 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ groups }) => {
   const user = useSessionStore(state => state.user);
   const logoutMutation = useLogoutMutation();
   const items = groups.flatMap(group => group.items);
+  // La mayoría de las cuentas (Futbolista, Gestor de Cancha recién aprobado) nunca tienen
+  // módulos administrativos — no es un estado transitorio "todavía no te dieron permiso", es su
+  // condición normal y permanente. Encuadrarlo como "panel administrativo" / "sin capacidades
+  // administrativas" (como si les faltara algo) confundía a cuentas públicas reales creadas por
+  // el registro (feature 016/008) que nunca debieron ver lenguaje de administración.
+  const hasAdminModules = items.length > 0;
 
   if (!user) {
     return (
@@ -32,18 +38,22 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ groups }) => {
   return (
     <main className="admin-dashboard">
       <header className="admin-dashboard__hero">
-        <p className="admin-state__eyebrow">Panel administrativo</p>
+        <p className="admin-state__eyebrow">{hasAdminModules ? 'Panel administrativo' : 'Tu cuenta'}</p>
         <h1>Hola, {user.name.split(' ')[0]}</h1>
-        <p>Accede únicamente a las herramientas habilitadas para tu cuenta.</p>
+        <p>
+          {hasAdminModules
+            ? 'Accede únicamente a las herramientas habilitadas para tu cuenta.'
+            : 'Esta es la información de tu cuenta en CanchaGO.'}
+        </p>
       </header>
 
       <ProfileSummary user={user} />
 
-      {items.length === 0 ? (
+      {!hasAdminModules ? (
         <section className="admin-state" role="status" aria-labelledby="admin-empty-title">
-          <p className="admin-state__eyebrow">Sin módulos disponibles</p>
-          <h2 id="admin-empty-title">Tu cuenta no tiene capacidades administrativas</h2>
-          <p>Cuando recibas un permiso administrativo, su sección aparecerá aquí automáticamente.</p>
+          <p className="admin-state__eyebrow">CanchaGO</p>
+          <h2 id="admin-empty-title">Todo en orden</h2>
+          <p>Por ahora no hay herramientas adicionales para tu cuenta. Vuelve pronto.</p>
         </section>
       ) : (
         <section aria-labelledby="admin-modules-title">
