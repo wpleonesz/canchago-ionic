@@ -19,6 +19,7 @@ import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation'
 import AccessRequestsModule from '../features/access-requests/pages/AccessRequestsModule';
 import UsersModule from '../features/users/pages/UsersModule';
 import OwnProfilePage from '../features/users/pages/OwnProfilePage';
+import RolesModule from '../features/roles/pages/RolesModule';
 import AdminRoute from '../routes/AdminRoute';
 import { useSessionStore } from '../store/sessionStore';
 import '../features/admin/admin-layout.css';
@@ -28,7 +29,12 @@ const AdminLayout: React.FC = () => {
   const permissions = useSessionStore(state => state.user?.permissions);
   const groups = useMemo(() => filterAdminNavigation(ADMIN_NAVIGATION, permissions), [permissions]);
   const activeItem = findActiveAdminItem(groups, location.pathname);
-  const pageTitle = location.pathname === '/admin' ? 'Inicio' : location.pathname === '/admin/profile' ? 'Mi perfil' : (activeItem?.label ?? 'Administración');
+  const pageTitle =
+    location.pathname === '/admin'
+      ? 'Inicio'
+      : location.pathname === '/admin/profile'
+        ? 'Mi perfil'
+        : (activeItem?.label ?? 'Administración');
 
   return (
     <IonSplitPane contentId="admin-content" when="(min-width: 900px)" className="admin-shell">
@@ -58,9 +64,9 @@ const AdminLayout: React.FC = () => {
               <Route path="/admin/users">
                 <UsersModule />
               </Route>
-              <AdminRoute path="/admin/roles" requiredPermissions={['roles.read']}>
-                <AdminModulePendingPage moduleName="Gestión de roles" />
-              </AdminRoute>
+              <Route path="/admin/roles">
+                <RolesModule />
+              </Route>
               <AdminRoute path="/admin/permissions" requiredPermissions={['permisos.read']}>
                 <AdminModulePendingPage moduleName="Catálogo de permisos" />
               </AdminRoute>

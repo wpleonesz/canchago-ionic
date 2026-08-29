@@ -49,4 +49,29 @@ describe('AdminRoute', () => {
     expect(screen.queryByText('Contenido restringido')).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('No tienes permiso');
   });
+
+  it('requires every permission when requireAllPermissions is enabled', () => {
+    useSessionStore.getState().setSession({
+      id: 'user-1',
+      email: 'admin@example.com',
+      name: 'Admin',
+      roles: [],
+      permissions: [{ id: 'permission-1', code: 'roles.manage' }],
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/admin/roles/new']}>
+        <AdminRoute
+          path="/admin/roles/new"
+          requiredPermissions={['roles.manage', 'permisos.read']}
+          requireAllPermissions
+        >
+          <p>Formulario de roles</p>
+        </AdminRoute>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Formulario de roles')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('No tienes permiso');
+  });
 });
