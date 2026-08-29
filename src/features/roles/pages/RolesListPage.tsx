@@ -16,7 +16,7 @@ type RoleTypeFilter = 'all' | 'system' | 'custom';
 
 const RolesListPage: React.FC = () => {
   const history = useHistory();
-  const organizationsQuery = useOrganizations(1, 100);
+  const organizationsQuery = useOrganizations({ page: 1, pageSize: 100 });
   const [organizationId, setOrganizationId] = useState('');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');

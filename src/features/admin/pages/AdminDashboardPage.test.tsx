@@ -45,7 +45,7 @@ describe('AdminDashboardPage', () => {
   });
 
   it('renders only the authorized modules as client-side links', () => {
-    const permissions = [{ id: 'permission-1', code: 'organizaciones.manage' }];
+    const permissions = [{ id: 'permission-1', code: 'organizaciones.read' }];
     useSessionStore.getState().setSession({
       id: 'user-1',
       email: 'manager@example.com',
@@ -56,10 +56,7 @@ describe('AdminDashboardPage', () => {
 
     renderDashboard(filterAdminNavigation(ADMIN_NAVIGATION, permissions));
 
-    expect(screen.getByRole('link', { name: /solicitudes de acceso/i })).toHaveAttribute(
-      'href',
-      '/admin/organizations',
-    );
+    expect(screen.getByRole('link', { name: /organizaciones/i })).toHaveAttribute('href', '/admin/organizations');
     expect(screen.queryByRole('link', { name: /usuarios/i })).not.toBeInTheDocument();
   });
 

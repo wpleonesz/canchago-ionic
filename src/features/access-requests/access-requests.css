@@ -3,6 +3,14 @@
   gap: 18px;
 }
 
+.access-requests-page > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--app-space-4);
+}
+
 .access-requests-page > header p {
   margin: 6px 0 0;
   color: var(--app-color-text-muted);

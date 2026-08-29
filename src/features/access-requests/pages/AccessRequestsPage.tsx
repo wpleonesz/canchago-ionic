@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import AppButton from '../../../components/common/AppButton';
 import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
 import AppDataList from '../../../components/common/AppDataList';
 import AccessRequestListItem from '../components/AccessRequestListItem';
@@ -7,6 +9,7 @@ import type { AccessRequestDto } from '../../../types/api/access-requests';
 import '../access-requests.css';
 
 const AccessRequestsPage: React.FC = () => {
+  const history = useHistory();
   const [page, setPage] = useState(1);
   const [requestToApprove, setRequestToApprove] = useState<AccessRequestDto | null>(null);
   const [requestToReject, setRequestToReject] = useState<AccessRequestDto | null>(null);
@@ -38,8 +41,13 @@ const AccessRequestsPage: React.FC = () => {
   return (
     <section className="access-requests-page" aria-labelledby="access-requests-title">
       <header>
-        <h1 id="access-requests-title">Solicitudes de acceso</h1>
-        <p>Organizaciones y sedes creadas por registro público, pendientes de tu aprobación.</p>
+        <div>
+          <h1 id="access-requests-title">Solicitudes de acceso</h1>
+          <p>Organizaciones y sedes creadas por registro público, pendientes de tu aprobación.</p>
+        </div>
+        <AppButton fill="outline" onClick={() => history.push('/admin/organizations')}>
+          Volver a organizaciones
+        </AppButton>
       </header>
 
       <AppDataList

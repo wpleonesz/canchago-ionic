@@ -16,7 +16,7 @@ import AdminModulePendingPage from '../features/admin/pages/AdminModulePendingPa
 import AdminNotFoundPage from '../features/admin/pages/AdminNotFoundPage';
 import { filterAdminNavigation, findActiveAdminItem } from '../features/admin/navigation/admin-capabilities';
 import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation';
-import AccessRequestsModule from '../features/access-requests/pages/AccessRequestsModule';
+import OrganizationsModule from '../features/organizations/pages/OrganizationsModule';
 import UsersModule from '../features/users/pages/UsersModule';
 import OwnProfilePage from '../features/users/pages/OwnProfilePage';
 import RolesModule from '../features/roles/pages/RolesModule';
@@ -71,7 +71,7 @@ const AdminLayout: React.FC = () => {
                 <AdminModulePendingPage moduleName="Catálogo de permisos" />
               </AdminRoute>
               <Route path="/admin/organizations">
-                <AccessRequestsModule />
+                <OrganizationsModule />
               </Route>
               <AdminNotFoundPage />
             </Switch>

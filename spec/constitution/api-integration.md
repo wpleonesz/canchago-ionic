@@ -2,7 +2,7 @@
 
 _Contratos reales verificados leyendo el código de `canchago` (no la documentación OpenAPI cuando ambas discrepan — se anota explícitamente cuando eso pasa). Este documento se actualiza cada vez que una feature consume o descubre un contrato nuevo, y es el lugar donde se registran necesidades de cambio en el backend **antes** de pedir su implementación — nunca se modifica `canchago` directamente desde este proyecto._
 
-Última verificación: 2026-08-21, contra el estado local actual de `canchago`.
+Última verificación: 2026-08-29, contra el estado local actual de `canchago`.
 
 ---
 
@@ -200,6 +200,24 @@ El backend **no** devuelve `X-Request-ID`, `X-Correlation-ID` ni `traceparent` e
 ## 10. Registro de cambios
 
 _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aquí escrito, añadir una entrada fechada aquí antes de implementar._
+
+### Gestión de organizaciones y sedes — administración (feature 010, 2026-08-29)
+
+Contrato verificado en código real de `canchago` (`pages/api/organizaciones/**`, `services/organizaciones-sedes/`, `database/organizaciones-sedes/`, `validations/organizaciones-sedes/`, `prisma/schema.prisma`) para la nueva pantalla administrativa de CRUD de organizaciones y sedes (`spec/features/010-gestion-organizaciones-sedes/`), que reemplaza el placeholder de organizaciones descrito en la entrada de la feature `008` de abajo.
+
+- El modelo Prisma real es `Venue` (tabla `venues`), no `Sede` — "sede" es solo el término en español usado en rutas/carpetas del backend. No existe modelo `Court`/`Cancha`.
+- `POST/PATCH /organizaciones` y `POST/PATCH /organizaciones/{id}/sedes` nunca aceptan `status` en el body; el backend siempre escribe `'ACTIVE'` al crear. `Organization.status`/`Venue.status` son texto libre (`VARCHAR(30)`, sin `CHECK`/enum); los únicos valores usados hoy en todo el código son `'ACTIVE'` y `'PENDING_APPROVAL'`.
+- `POST /organizaciones/{organizationId}/sedes` nunca acepta `organizationId` en el body — se toma solo del path.
+- Los permisos sembrados `sedes.read`/`sedes.manage` (`prisma/seed.ts`) **no los verifica ningún endpoint real** — todo el CRUD de sedes usa `organizaciones.read`/`organizaciones.manage`. No usar `sedes.*` para gatear nada en el frontend.
+- **Gaps de backend verificados, sin cerrar hoy** (detalle completo y justificación en `spec/features/010-gestion-organizaciones-sedes/spec.md`, sección "Dependencia de backend"):
+  1. `GET/PATCH/DELETE /organizaciones/{organizationId}/sedes/{sedeId}` no valida que `sedeId` pertenezca a `organizationId` — IDOR real entre organizaciones para el recurso sede.
+  2. `GET/PATCH/DELETE /organizaciones/{organizationId}` y el CRUD de sede individual no repiten el filtro de alcance por actor que sí aplica `GET /organizaciones` (listado) para administradores no-globales.
+  3. Crear una sede con `organizationId` inexistente produce `500` (violación de FK no capturada), no `404`.
+  4. Sin concurrencia optimista (`expectedUpdatedAt`) en `PATCH` de organización/sede, a diferencia de `Role` (feature `018`).
+  5. `Organization.name` no tiene `@@unique` real (solo índice) — duplicados de nombre de organización no están bloqueados pese a que el código maneja un `ConflictError` para ese caso (código inalcanzable). `Venue` sí tiene `@@unique([organizationId, name])` real y funcional.
+  6. Sin auditoría: `AuditAction` solo cubre `ROLE_CREATED`/`ROLE_UPDATED`.
+  7. Sin `_count` de sedes por organización en el listado — por eso la pantalla no muestra "número de sedes" (evita N+1).
+- Mientras estos puntos no se resuelvan en `canchago` (posible feature de hardening futura, análoga a `018`, fuera de este repositorio), la pantalla de organizaciones/sedes **no se considera protegida contra acceso cruzado entre organizaciones a nivel de servidor** — mismo criterio que ya aplica la nota de escalamiento de privilegios de la feature `005` en §4: la UI oculta por conveniencia, no por garantía del servidor.
 
 ### Gestión administrativa de roles (backend 018, 2026-08-29)
 

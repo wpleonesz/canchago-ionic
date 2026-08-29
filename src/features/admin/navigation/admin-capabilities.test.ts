@@ -30,7 +30,7 @@ describe('admin capabilities', () => {
   it('shows every real module from effective permissions without checking role names', () => {
     const filtered = filterAdminNavigation(
       ADMIN_NAVIGATION,
-      permissions('users.read', 'roles.read', 'permisos.read', 'organizaciones.manage'),
+      permissions('users.read', 'roles.read', 'permisos.read', 'organizaciones.read'),
     );
 
     expect(filtered.flatMap(group => group.items)).toHaveLength(4);

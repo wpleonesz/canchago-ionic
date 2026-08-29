@@ -17,7 +17,7 @@ const renderModule = (): ReturnType<typeof render> => {
 
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/admin/organizations']}>
+      <MemoryRouter initialEntries={['/admin/organizations/access-requests']}>
         <AccessRequestsModule />
       </MemoryRouter>
     </QueryClientProvider>,

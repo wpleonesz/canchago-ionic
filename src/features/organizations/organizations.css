@@ -1,0 +1,182 @@
+.organizations-list-page,
+.organization-detail-page,
+.organization-form-page,
+.venue-form-page {
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-5: 24px;
+  --app-text-secondary: var(--app-color-text-muted);
+  --app-surface: var(--app-color-surface);
+  --app-surface-muted: var(--app-color-surface-muted);
+  --app-border-color: var(--app-color-border);
+  --app-shadow-sm: var(--app-shadow-card);
+  display: grid;
+  gap: var(--app-space-5);
+}
+
+.organizations-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--app-space-4);
+}
+
+.organizations-page-header h1 {
+  margin: 0;
+}
+
+.organizations-page-header p {
+  margin: var(--app-space-1) 0 0;
+  color: var(--app-text-secondary);
+}
+
+.organizations-page-header__eyebrow {
+  color: var(--ion-color-primary) !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+}
+
+.organizations-page-header__actions,
+.organization-list-item__actions,
+.venue-list-item__actions,
+.organization-form__actions,
+.venue-form__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+}
+
+.organizations-list-page__toolbar,
+.organization-venues__toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(180px, 1fr);
+  gap: var(--app-space-3);
+  align-items: end;
+}
+
+.organization-list-item__title,
+.venue-list-item__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-2);
+}
+
+.organization-list-item__title h2,
+.venue-list-item__title h2 {
+  margin: 0;
+}
+
+.organization-list-item__meta,
+.venue-list-item__meta {
+  font-size: 0.82rem;
+  color: var(--app-text-secondary);
+}
+
+.organization-detail-card,
+.organization-form,
+.venue-form {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-5);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.organization-detail-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--app-space-4);
+  margin: 0;
+}
+
+.organization-detail-card dt {
+  color: var(--app-text-secondary);
+  font-size: 0.8rem;
+  margin-bottom: var(--app-space-1);
+}
+
+.organization-detail-card dd {
+  margin: 0;
+}
+
+.organization-venues {
+  display: grid;
+  gap: var(--app-space-3);
+}
+
+.organization-venues__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-3);
+}
+
+.organization-venues__header h2 {
+  margin: 0;
+}
+
+.organization-form,
+.venue-form {
+  display: grid;
+  gap: var(--app-space-5);
+  max-width: 900px;
+}
+
+.organization-form__section,
+.venue-form__section {
+  display: grid;
+  gap: var(--app-space-3);
+}
+
+.organization-form__section > div > p,
+.venue-form__section > div > p {
+  color: var(--app-text-secondary);
+  margin: var(--app-space-1) 0 0;
+}
+
+.organization-form__actions,
+.venue-form__actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 760px) {
+  .organizations-page-header,
+  .organization-venues__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .organizations-list-page__toolbar,
+  .organization-venues__toolbar,
+  .organization-detail-card dl {
+    grid-template-columns: 1fr;
+  }
+
+  .organizations-page-header__actions,
+  .organization-form__actions,
+  .venue-form__actions {
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+
+  .organizations-page-header__actions .app-button,
+  .organization-form__actions .app-button,
+  .venue-form__actions .app-button {
+    width: 100%;
+  }
+
+  .organization-list-item,
+  .venue-list-item {
+    --inner-padding-end: var(--app-space-2);
+  }
+
+  .organization-list-item__actions,
+  .venue-list-item__actions {
+    flex-direction: column;
+  }
+}
