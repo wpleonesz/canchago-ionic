@@ -12,6 +12,7 @@ import PermissionGuard from '../../auth/components/PermissionGuard';
 import { useDeactivateUser } from '../hooks/useUserMutations';
 import { useAssignUserRoles, useRemoveUserRole } from '../hooks/useUserRoles';
 import { useUser } from '../hooks/useUsers';
+import OrganizationPicker from '../components/OrganizationPicker';
 import UserRolesEditor from '../components/UserRolesEditor';
 import type { UserRoleDto } from '../../../types/api/users';
 import { AppClientError } from '../../../services/api/errorMapper';
@@ -24,6 +25,7 @@ const UserDetailPage: React.FC = () => {
   const [roleToRemove, setRoleToRemove] = useState<UserRoleDto | null>(null);
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
   const [rolesToAdd, setRolesToAdd] = useState<string[]>([]);
+  const [newAssignmentOrganizationId, setNewAssignmentOrganizationId] = useState<string | undefined>(undefined);
   const [feedback, setFeedback] = useState<{ kind: AppInteractionAlertKind; header: string; message: string } | null>(
     null,
   );
@@ -45,6 +47,7 @@ const UserDetailPage: React.FC = () => {
     assignRolesMutation.mutate(rolesToAdd, {
       onSuccess: () => {
         setRolesToAdd([]);
+        setNewAssignmentOrganizationId(undefined);
         setFeedback({
           kind: 'success',
           header: 'Roles actualizados',
@@ -98,7 +101,14 @@ const UserDetailPage: React.FC = () => {
     });
   };
 
-  const roleOrganizationId = user.roles[0]?.organizationId ?? undefined;
+  // El usuario puede tener roles de organizaciones distintas (el backend no lo restringe, ver
+  // `database/users/index.ts#addRolesToUser`); se usa la primera organización real encontrada
+  // solo para precargar el selector de roles a asignar, no como alcance exclusivo del usuario.
+  // Root cause (reportado): si el usuario NO tiene ningún rol todavía, no había ninguna
+  // organización que derivar y tampoco un selector para elegirla — `UserRolesEditor` quedaba
+  // deshabilitado ("Selecciona primero una organización") sin que la pantalla ofreciera cómo.
+  const existingOrganizationId = user.roles.find(role => role.organizationId)?.organizationId ?? undefined;
+  const roleOrganizationId = existingOrganizationId ?? newAssignmentOrganizationId;
 
   return (
     <section className="user-detail-page" aria-labelledby="user-detail-title">
@@ -164,6 +174,15 @@ const UserDetailPage: React.FC = () => {
 
         <PermissionGuard permission="users.manage">
           <div className="user-detail-page__add-role">
+            {!existingOrganizationId && (
+              <OrganizationPicker
+                value={newAssignmentOrganizationId}
+                onChange={organizationId => {
+                  setNewAssignmentOrganizationId(organizationId);
+                  setRolesToAdd([]);
+                }}
+              />
+            )}
             <UserRolesEditor
               organizationId={roleOrganizationId}
               value={rolesToAdd}
