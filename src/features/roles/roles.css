@@ -1,7 +1,8 @@
 .roles-list-page,
 .role-detail-page,
 .role-form-page,
-.role-permission-page {
+.role-permission-page,
+.permissions-list-page {
   --app-space-1: 4px;
   --app-space-2: 8px;
   --app-space-3: 12px;
@@ -57,15 +58,26 @@
   align-items: end;
 }
 
-.role-list-item__title {
+.permissions-list-page__toolbar {
+  max-width: 480px;
+}
+
+.role-list-item__title,
+.permission-list-item__title {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--app-space-2);
 }
 
-.role-list-item__title h2 {
+.role-list-item__title h2,
+.permission-list-item__title h2 {
   margin: 0;
+}
+
+.permission-list-item__meta {
+  font-size: 0.82rem;
+  color: var(--app-text-secondary);
 }
 
 .role-list-item__meta {
@@ -85,6 +97,18 @@
   border-radius: var(--app-radius-lg);
   padding: var(--app-space-5);
   box-shadow: var(--app-shadow-sm);
+}
+
+/* `RolePermissionSelector` ya trae su propia tarjeta (`.role-permission-selector`,
+   regla de arriba) para cuando se usa suelto en la página "Gestionar permisos". Pero
+   `RoleForm` también lo usa dentro de `.role-form`, que YA es la tarjeta — sin esto,
+   quedaba una segunda tarjeta anidada dentro de la primera. Aquí se aplana. */
+.role-form .role-permission-selector {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 .role-detail-card dl {
@@ -178,16 +202,25 @@
   margin: var(--app-space-1) 0 0;
 }
 
+/* Grupo de permisos por módulo: solo un título + lista, sin caja propia — evita
+   la tarjeta-dentro-de-tarjeta que resultaba de anidar esta caja bajo
+   `.role-permission-selector`/`.role-form`, que ya son la tarjeta contenedora. */
 .role-form__permission-group {
   display: grid;
   gap: var(--app-space-3);
-  border: 1px solid var(--app-border-color);
-  border-radius: var(--app-radius-md);
-  padding: var(--app-space-4);
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.role-form__permission-group:not(:first-of-type) {
+  padding-top: var(--app-space-4);
+  border-top: 1px solid var(--app-border-color);
 }
 
 .role-form__permission-group legend {
-  padding: 0 var(--app-space-2);
+  padding: 0;
+  margin: 0 0 var(--app-space-1);
   font-weight: 700;
   text-transform: capitalize;
 }

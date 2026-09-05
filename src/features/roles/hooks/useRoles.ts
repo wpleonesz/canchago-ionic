@@ -21,6 +21,7 @@ export const roleKeys = {
   list: (query: RoleListQuery) => ['roles', 'list', query] as const,
   detail: (organizationId: string, roleId: string) => ['roles', 'detail', organizationId, roleId] as const,
   permissions: (query: Pick<PermissionListQuery, 'search' | 'module'> = {}) => ['permissions', query] as const,
+  permissionsPage: (query: PermissionListQuery) => ['permissions', 'page', query] as const,
 };
 
 export const useRoles = (organizationId: string | undefined, page = 1, pageSize = 50) =>
@@ -53,6 +54,16 @@ export const usePermissions = (query: Pick<PermissionListQuery, 'search' | 'modu
     initialPageParam: 1,
     queryFn: ({ pageParam }) => getPermissions({ ...query, page: pageParam, pageSize: 100 }),
     getNextPageParam: lastPage => (lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined),
+    staleTime: 5 * 60 * 1000,
+  });
+
+// Catálogo de permisos como tabla paginada (pantalla `/admin/permissions`, feature 012) — a
+// diferencia de `usePermissions` (infinite query pensada para "cargar más" dentro del selector
+// de permisos de un rol), esta expone una página concreta compatible con `AppDataList`.
+export const usePermissionsCatalog = (query: PermissionListQuery) =>
+  useQuery({
+    queryKey: roleKeys.permissionsPage(query),
+    queryFn: () => getPermissions(query),
     staleTime: 5 * 60 * 1000,
   });
 

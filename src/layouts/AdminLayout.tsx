@@ -12,13 +12,13 @@ import {
 } from '@ionic/react';
 import AdminNavigation from '../features/admin/components/AdminNavigation';
 import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
-import AdminModulePendingPage from '../features/admin/pages/AdminModulePendingPage';
 import AdminNotFoundPage from '../features/admin/pages/AdminNotFoundPage';
 import { filterAdminNavigation, findActiveAdminItem } from '../features/admin/navigation/admin-capabilities';
 import { ADMIN_NAVIGATION } from '../features/admin/navigation/admin-navigation';
 import OrganizationsModule from '../features/organizations/pages/OrganizationsModule';
 import UsersModule from '../features/users/pages/UsersModule';
 import OwnProfilePage from '../features/users/pages/OwnProfilePage';
+import PermissionsListPage from '../features/roles/pages/PermissionsListPage';
 import RolesModule from '../features/roles/pages/RolesModule';
 import AdminRoute from '../routes/AdminRoute';
 import { useSessionStore } from '../store/sessionStore';
@@ -68,7 +68,7 @@ const AdminLayout: React.FC = () => {
                 <RolesModule />
               </Route>
               <AdminRoute path="/admin/permissions" requiredPermissions={['permisos.read']}>
-                <AdminModulePendingPage moduleName="Catálogo de permisos" />
+                <PermissionsListPage />
               </AdminRoute>
               <Route path="/admin/organizations">
                 <OrganizationsModule />
