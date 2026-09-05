@@ -9,7 +9,11 @@ import type { OwnProfileFormValues } from '../../../validation/user-profile';
 import OwnProfileForm from '../components/OwnProfileForm';
 import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
 import {
-  useOwnAvatar, useOwnProfile, useRemoveOwnAvatar, useUpdateOwnAvatar, useUpdateOwnProfile,
+  useOwnAvatar,
+  useOwnProfile,
+  useRemoveOwnAvatar,
+  useUpdateOwnAvatar,
+  useUpdateOwnProfile,
 } from '../hooks/useOwnProfile';
 import '../users.css';
 
@@ -28,7 +32,10 @@ const OwnProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!avatarQuery.data) { setAvatarUrl(null); return; }
+    if (!avatarQuery.data) {
+      setAvatarUrl(null);
+      return;
+    }
     const url = URL.createObjectURL(avatarQuery.data);
     setAvatarUrl(url);
     return () => URL.revokeObjectURL(url);
@@ -36,16 +43,27 @@ const OwnProfilePage: React.FC = () => {
 
   if (profileQuery.isLoading) return <AppSkeleton rows={5} />;
   if (profileQuery.isError || !profileQuery.data || !user) {
-    return <AppErrorState message="No se pudo cargar tu perfil." isRetrying={profileQuery.isFetching} onRetry={() => void profileQuery.refetch()} />;
+    return (
+      <AppErrorState
+        message="No se pudo cargar tu perfil."
+        isRetrying={profileQuery.isFetching}
+        onRetry={() => void profileQuery.refetch()}
+      />
+    );
   }
 
   const submit = async (values: OwnProfileFormValues): Promise<boolean> => {
-    setError(null); setMessage(null);
+    setError(null);
+    setMessage(null);
     const body: UpdateOwnUserProfileRequest = {
-      phone: EMPTY_TO_NULL(values.phone), facebookUrl: EMPTY_TO_NULL(values.facebookUrl),
-      instagramUrl: EMPTY_TO_NULL(values.instagramUrl), linkedinUrl: EMPTY_TO_NULL(values.linkedinUrl),
-      xUrl: EMPTY_TO_NULL(values.xUrl), githubUrl: EMPTY_TO_NULL(values.githubUrl),
-      tiktokUrl: EMPTY_TO_NULL(values.tiktokUrl), websiteUrl: EMPTY_TO_NULL(values.websiteUrl),
+      phone: EMPTY_TO_NULL(values.phone),
+      facebookUrl: EMPTY_TO_NULL(values.facebookUrl),
+      instagramUrl: EMPTY_TO_NULL(values.instagramUrl),
+      linkedinUrl: EMPTY_TO_NULL(values.linkedinUrl),
+      xUrl: EMPTY_TO_NULL(values.xUrl),
+      githubUrl: EMPTY_TO_NULL(values.githubUrl),
+      tiktokUrl: EMPTY_TO_NULL(values.tiktokUrl),
+      websiteUrl: EMPTY_TO_NULL(values.websiteUrl),
       expectedProfileUpdatedAt: profileQuery.data.profileUpdatedAt,
     };
     try {
@@ -53,24 +71,59 @@ const OwnProfilePage: React.FC = () => {
       setMessage('Tu perfil se actualizó correctamente.');
       return true;
     } catch (caught) {
-      setError(caught instanceof BusinessRuleError ? 'Tu perfil cambió en otra sesión. Recarga los datos.' : caught instanceof AppClientError ? caught.message : 'No se pudo guardar tu perfil.');
+      setError(
+        caught instanceof BusinessRuleError
+          ? 'Tu perfil cambió en otra sesión. Recarga los datos.'
+          : caught instanceof AppClientError
+            ? caught.message
+            : 'No se pudo guardar tu perfil.',
+      );
       return false;
     }
   };
 
   const upload = async (body: Parameters<typeof updateAvatar.mutateAsync>[0]): Promise<void> => {
-    try { await updateAvatar.mutateAsync(body); setMessage('Fotografía actualizada.'); }
-    catch (caught) { throw new Error(caught instanceof AppClientError ? caught.message : 'No se pudo actualizar la fotografía.'); }
+    setError(null);
+    setMessage(null);
+    try {
+      await updateAvatar.mutateAsync(body);
+      setMessage('Fotografía actualizada.');
+    } catch (caught) {
+      throw new Error(caught instanceof AppClientError ? caught.message : 'No se pudo actualizar la fotografía.');
+    }
   };
 
   return (
     <section className="own-profile-page" aria-labelledby="own-profile-title">
-      <header><p className="user-profile-edit-page__eyebrow">Tu cuenta</p><h1 id="own-profile-title">Mi perfil</h1>
-        <p>Completa solo la información que quieras compartir. Ningún campo de esta pantalla es obligatorio.</p></header>
-      <ProfilePhotoEditor name={user.name} avatarUrl={avatarUrl} hasAvatar={profileQuery.data.hasAvatar}
-        isBusy={updateAvatar.isPending || removeAvatar.isPending} onUpload={upload}
-        onRemove={async () => { setError(null); try { await removeAvatar.mutateAsync(); setMessage('Fotografía eliminada.'); } catch { setError('No se pudo eliminar la fotografía.'); } }} />
-      <OwnProfileForm profile={profileQuery.data} submitError={error} successMessage={message} onSubmit={submit} onDirtyChange={setDirty} />
+      <header>
+        <p className="user-profile-edit-page__eyebrow">Tu cuenta</p>
+        <h1 id="own-profile-title">Mi perfil</h1>
+        <p>Completa solo la información que quieras compartir. Ningún campo de esta pantalla es obligatorio.</p>
+      </header>
+      <ProfilePhotoEditor
+        name={user.name}
+        avatarUrl={avatarUrl}
+        hasAvatar={profileQuery.data.hasAvatar}
+        isBusy={updateAvatar.isPending || removeAvatar.isPending}
+        onUpload={upload}
+        onRemove={async () => {
+          setError(null);
+          setMessage(null);
+          try {
+            await removeAvatar.mutateAsync();
+            setMessage('Fotografía eliminada.');
+          } catch {
+            setError('No se pudo eliminar la fotografía.');
+          }
+        }}
+      />
+      <OwnProfileForm
+        profile={profileQuery.data}
+        submitError={error}
+        successMessage={message}
+        onSubmit={submit}
+        onDirtyChange={setDirty}
+      />
       <Prompt when={dirty} message="Tienes cambios sin guardar. Si sales ahora, los perderás." />
     </section>
   );

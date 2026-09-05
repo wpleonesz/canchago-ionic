@@ -6,12 +6,12 @@ interface AppInputProps extends Omit<ComponentProps<typeof IonInput>, 'label' | 
   error?: string;
 }
 
-const AppInput: React.FC<AppInputProps> = ({ label, error, ...rest }) => (
+const AppInput: React.FC<AppInputProps> = ({ label, error, className, ...rest }) => (
   <IonInput
     label={label}
     labelPlacement="stacked"
     fill="outline"
-    className={`app-input${error ? ' ion-invalid ion-touched' : ''}`}
+    className={`app-input${error ? ' ion-invalid ion-touched' : ''}${className ? ` ${className}` : ''}`}
     errorText={error}
     aria-invalid={Boolean(error)}
     {...rest}

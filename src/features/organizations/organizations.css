@@ -80,6 +80,8 @@
 .organization-detail-card,
 .organization-form,
 .venue-form {
+  width: 100%;
+  min-width: 0;
   background: var(--app-surface);
   border: 1px solid var(--app-border-color);
   border-radius: var(--app-radius-lg);
@@ -133,6 +135,11 @@
   gap: var(--app-space-3);
 }
 
+.organization-form__section > *,
+.venue-form__section > * {
+  min-width: 0;
+}
+
 .organization-form__section > div > p,
 .venue-form__section > div > p {
   color: var(--app-text-secondary);
@@ -141,7 +148,21 @@
 
 .organization-form__actions,
 .venue-form__actions {
+  flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+@media (min-width: 761px) {
+  .organization-form__section,
+  .venue-form__section {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--app-space-4);
+  }
+
+  .organization-form__section > div,
+  .venue-form__section > div {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 760px) {
@@ -165,9 +186,16 @@
   }
 
   .organizations-page-header__actions .app-button,
+  .organizations-page-header > .app-button,
   .organization-form__actions .app-button,
   .venue-form__actions .app-button {
     width: 100%;
+  }
+
+  .organization-detail-card,
+  .organization-form,
+  .venue-form {
+    padding: var(--app-space-4);
   }
 
   .organization-list-item,

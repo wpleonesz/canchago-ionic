@@ -8,11 +8,13 @@ import AppErrorState from '../../../components/feedback/AppErrorState';
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
 import AppSearchInput from '../../../components/forms/AppSearchInput';
 import AppSelect from '../../../components/forms/AppSelect';
+import AppDetailActions from '../../../components/layout/AppDetailActions';
 import { NotFoundError } from '../../../services/api/errorMapper';
 import PermissionGuard from '../../auth/components/PermissionGuard';
 import VenueListItem from '../components/VenueListItem';
 import { useOrganization } from '../hooks/useOrganizations';
 import { useVenues } from '../hooks/useVenues';
+import { getOrganizationStatusColor, getOrganizationStatusLabel } from '../organizationStatus';
 import '../organizations.css';
 
 const OrganizationDetailPage: React.FC = () => {
@@ -56,7 +58,7 @@ const OrganizationDetailPage: React.FC = () => {
           <h1 id="organization-detail-title">{organization.name}</h1>
           <p>{organization.legalName ?? 'Sin razón social registrada'}</p>
         </div>
-        <div className="organizations-page-header__actions">
+        <AppDetailActions className="organizations-page-header__actions">
           <AppButton fill="outline" onClick={() => history.push('/admin/organizations')}>
             Volver
           </AppButton>
@@ -65,7 +67,7 @@ const OrganizationDetailPage: React.FC = () => {
               Editar organización
             </AppButton>
           </PermissionGuard>
-        </div>
+        </AppDetailActions>
       </header>
 
       <article className="organization-detail-card">
@@ -73,7 +75,9 @@ const OrganizationDetailPage: React.FC = () => {
           <div>
             <dt>Estado</dt>
             <dd>
-              <IonBadge color={organization.status === 'ACTIVE' ? 'success' : 'medium'}>{organization.status}</IonBadge>
+              <IonBadge color={getOrganizationStatusColor(organization.status)}>
+                {getOrganizationStatusLabel(organization.status)}
+              </IonBadge>
             </dd>
           </div>
           <div>

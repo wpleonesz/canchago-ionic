@@ -3,6 +3,7 @@ import { IonText, IonTextarea } from '@ionic/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import AppButton from '../../../components/common/AppButton';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import { venueFormSchema, type VenueFormValues } from '../../../validation/organizaciones';
 
@@ -82,7 +83,7 @@ const VenueForm: React.FC<VenueFormProps> = ({
               maxlength={500}
               autoGrow
               disabled={isSubmitting}
-              className={fieldState.error ? 'ion-invalid ion-touched' : ''}
+              className={`app-textarea${fieldState.error ? ' ion-invalid ion-touched' : ''}`}
               errorText={fieldState.error?.message}
               onIonInput={event => field.onChange(event.detail.value ?? '')}
               onIonBlur={field.onBlur}
@@ -127,11 +128,12 @@ const VenueForm: React.FC<VenueFormProps> = ({
         />
       </section>
 
-      {submitError && (
-        <IonText color="danger" role="alert" aria-live="assertive">
-          <p>{submitError}</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={Boolean(submitError)}
+        kind="error"
+        header="No se pudo guardar la sede"
+        message={submitError ?? ''}
+      />
       {Object.keys(errors).length > 0 && !submitError && (
         <IonText color="danger" role="alert">
           <p>Revisa los campos marcados antes de continuar.</p>

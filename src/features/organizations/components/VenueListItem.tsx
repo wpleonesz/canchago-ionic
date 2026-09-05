@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import AppButton from '../../../components/common/AppButton';
 import type { VenueDto } from '../../../types/api/organizaciones';
 import PermissionGuard from '../../auth/components/PermissionGuard';
+import { getOrganizationStatusColor, getOrganizationStatusLabel } from '../organizationStatus';
 
 interface VenueListItemProps {
   venue: VenueDto;
@@ -17,7 +18,9 @@ const VenueListItem: React.FC<VenueListItemProps> = ({ venue }) => {
       <IonLabel>
         <div className="venue-list-item__title">
           <h2>{venue.name}</h2>
-          <IonBadge color={venue.status === 'ACTIVE' ? 'success' : 'medium'}>{venue.status}</IonBadge>
+          <IonBadge color={getOrganizationStatusColor(venue.status)}>
+            {getOrganizationStatusLabel(venue.status)}
+          </IonBadge>
         </div>
         {venue.address && <p>{venue.address}</p>}
         <p className="venue-list-item__meta">

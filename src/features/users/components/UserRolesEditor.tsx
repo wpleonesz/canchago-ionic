@@ -7,6 +7,7 @@ interface UserRolesEditorProps {
   onChange: (roleIds: string[]) => void;
   excludeRoleIds?: string[];
   error?: string;
+  disabled?: boolean;
 }
 
 // El catálogo de roles viene exclusivamente de GET /api/roles?organizationId=... — nunca
@@ -21,6 +22,7 @@ const UserRolesEditor: React.FC<UserRolesEditorProps> = ({
   onChange,
   excludeRoleIds = [],
   error,
+  disabled = false,
 }) => {
   const { data, isLoading, isError } = useRoles(organizationId);
 
@@ -43,7 +45,7 @@ const UserRolesEditor: React.FC<UserRolesEditorProps> = ({
       }
       options={options}
       value={value}
-      disabled={!organizationId || isLoading || isError}
+      disabled={disabled || !organizationId || isLoading || isError}
       error={error ?? (isError ? 'No se pudieron cargar los roles de esta organización.' : undefined)}
       onIonChange={event => onChange((event.detail.value as string[]) ?? [])}
     />

@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IonCheckbox, IonText, IonTextarea } from '@ionic/react';
+import { IonText, IonTextarea } from '@ionic/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useMemo } from 'react';
 import AppButton from '../../../components/common/AppButton';
-import AppErrorState from '../../../components/feedback/AppErrorState';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import { roleFormSchema, type RoleFormValues } from '../../../validation/roles';
 import { usePermissions } from '../hooks/useRoles';
+import RolePermissionSelector from './RolePermissionSelector';
 
 interface RoleFormProps {
   mode: 'create' | 'edit';
@@ -22,16 +23,6 @@ const RoleForm: React.FC<RoleFormProps> = ({ mode, defaultValues, submitError, o
   const permissions = useMemo(
     () => permissionsQuery.data?.pages.flatMap(page => page.data) ?? [],
     [permissionsQuery.data],
-  );
-  const modules = useMemo(
-    () =>
-      Object.entries(
-        permissions.reduce<Record<string, typeof permissions>>((grouped, permission) => {
-          (grouped[permission.module] ??= []).push(permission);
-          return grouped;
-        }, {}),
-      ),
-    [permissions],
   );
 
   const {
@@ -102,7 +93,7 @@ const RoleForm: React.FC<RoleFormProps> = ({ mode, defaultValues, submitError, o
               maxlength={500}
               autoGrow
               disabled={isSubmitting}
-              className={fieldState.error ? 'ion-invalid ion-touched' : ''}
+              className={`app-textarea${fieldState.error ? ' ion-invalid ion-touched' : ''}`}
               errorText={fieldState.error?.message}
               onIonInput={event => field.onChange(event.detail.value ?? '')}
               onIonBlur={field.onBlur}
@@ -117,45 +108,26 @@ const RoleForm: React.FC<RoleFormProps> = ({ mode, defaultValues, submitError, o
           <p>Solo se muestran capacidades reales del catálogo del backend.</p>
         </div>
 
-        {permissionsQuery.isLoading && <p role="status">Cargando permisos…</p>}
-        {permissionsQuery.isError && (
-          <AppErrorState
-            message="No se pudo cargar el catálogo de permisos."
-            onRetry={() => void permissionsQuery.refetch()}
-          />
-        )}
-        {modules.map(([moduleName, modulePermissions]) => (
-          <fieldset key={moduleName} className="role-form__permission-group" disabled={isSubmitting}>
-            <legend>{moduleName}</legend>
-            {modulePermissions.map(permission => (
-              <IonCheckbox
-                key={permission.id}
-                checked={selectedPermissionIds.includes(permission.id)}
-                onIonChange={event => togglePermission(permission.id, event.detail.checked)}
-              >
-                <strong>{permission.code}</strong>
-                {permission.description && <small>{permission.description}</small>}
-              </IonCheckbox>
-            ))}
-          </fieldset>
-        ))}
-        {permissionsQuery.hasNextPage && (
-          <AppButton
-            type="button"
-            fill="outline"
-            isLoading={permissionsQuery.isFetchingNextPage}
-            onClick={() => void permissionsQuery.fetchNextPage()}
-          >
-            Cargar más permisos
-          </AppButton>
-        )}
+        <RolePermissionSelector
+          permissions={permissions}
+          selectedIds={selectedPermissionIds}
+          disabled={isSubmitting}
+          isLoading={permissionsQuery.isLoading}
+          isError={permissionsQuery.isError}
+          hasNextPage={permissionsQuery.hasNextPage}
+          isFetchingNextPage={permissionsQuery.isFetchingNextPage}
+          onToggle={togglePermission}
+          onRetry={() => void permissionsQuery.refetch()}
+          onLoadMore={() => void permissionsQuery.fetchNextPage()}
+        />
       </section>
 
-      {submitError && (
-        <IonText color="danger" role="alert" aria-live="assertive">
-          <p>{submitError}</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={Boolean(submitError)}
+        kind="error"
+        header="No se pudo guardar el rol"
+        message={submitError ?? ''}
+      />
       {Object.keys(errors).length > 0 && !submitError && (
         <IonText color="danger" role="alert">
           <p>Revisa los campos marcados antes de continuar.</p>

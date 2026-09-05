@@ -3,6 +3,7 @@ import { IonText } from '@ionic/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import AppButton from '../../../components/common/AppButton';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import { organizationFormSchema, type OrganizationFormValues } from '../../../validation/organizaciones';
 
@@ -161,11 +162,12 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({
         />
       </section>
 
-      {submitError && (
-        <IonText color="danger" role="alert" aria-live="assertive">
-          <p>{submitError}</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={Boolean(submitError)}
+        kind="error"
+        header="No se pudo guardar la organización"
+        message={submitError ?? ''}
+      />
       {Object.keys(errors).length > 0 && !submitError && (
         <IonText color="danger" role="alert">
           <p>Revisa los campos marcados antes de continuar.</p>

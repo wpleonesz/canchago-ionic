@@ -46,6 +46,15 @@ vi.mock('../../../components/feedback/AppConfirmDialog', () => ({
     ) : null,
 }));
 
+vi.mock('../../../components/feedback/AppInteractionAlert', () => ({
+  default: ({ isOpen, header, message }: { isOpen: boolean; header?: string; message: string }) =>
+    isOpen ? (
+      <div role="status" aria-label={header}>
+        {message}
+      </div>
+    ) : null,
+}));
+
 const PENDING_REQUEST = {
   id: 'request-1',
   status: 'PENDING' as const,
@@ -108,6 +117,7 @@ describe('AccessRequestsPage', () => {
     await waitFor(() => {
       expect(approveAccessRequestMock).toHaveBeenCalledWith('request-1');
     });
+    expect(await screen.findByRole('status', { name: 'Solicitud aprobada' })).toHaveTextContent('Mi Cancha');
   });
 
   it('asks for confirmation before rejecting, and calls the endpoint only after confirming', async () => {
@@ -128,5 +138,22 @@ describe('AccessRequestsPage', () => {
     await waitFor(() => {
       expect(rejectAccessRequestMock).toHaveBeenCalledWith('request-1', undefined);
     });
+    expect(await screen.findByRole('status', { name: 'Solicitud rechazada' })).toHaveTextContent('Mi Cancha');
+  });
+
+  it('shows backend feedback when an approval fails', async () => {
+    getAccessRequestsMock.mockResolvedValue({
+      data: [PENDING_REQUEST],
+      meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
+    });
+    approveAccessRequestMock.mockRejectedValue(new Error('network'));
+
+    render(<AccessRequestsPage />, { wrapper });
+    fireEvent.click(await screen.findByText('Aprobar'));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByText('Aprobar'));
+
+    expect(await screen.findByRole('status', { name: 'No se pudo aprobar la solicitud' })).toHaveTextContent(
+      'Intenta nuevamente',
+    );
   });
 });

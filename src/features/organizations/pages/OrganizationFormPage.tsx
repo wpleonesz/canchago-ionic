@@ -8,6 +8,7 @@ import { AppClientError, BusinessRuleError } from '../../../services/api/errorMa
 import type { OrganizationFormValues } from '../../../validation/organizaciones';
 import OrganizationForm from '../components/OrganizationForm';
 import { useCreateOrganization, useOrganization, useUpdateOrganization } from '../hooks/useOrganizations';
+import { getOrganizationStatusLabel } from '../organizationStatus';
 import '../organizations.css';
 
 interface OrganizationFormPageProps {
@@ -101,7 +102,8 @@ const OrganizationFormPage: React.FC<OrganizationFormPageProps> = ({ mode }) => 
           <h1 id="organization-form-title">{mode === 'create' ? 'Nueva organización' : 'Editar organización'}</h1>
           {mode === 'edit' && organizationQuery.data && (
             <p>
-              Estado actual: <strong>{organizationQuery.data.status}</strong> (no editable desde este formulario).
+              Estado actual: <strong>{getOrganizationStatusLabel(organizationQuery.data.status)}</strong> (no editable
+              desde este formulario).
             </p>
           )}
         </div>

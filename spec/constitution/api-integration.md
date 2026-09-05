@@ -2,7 +2,7 @@
 
 _Contratos reales verificados leyendo el código de `canchago` (no la documentación OpenAPI cuando ambas discrepan — se anota explícitamente cuando eso pasa). Este documento se actualiza cada vez que una feature consume o descubre un contrato nuevo, y es el lugar donde se registran necesidades de cambio en el backend **antes** de pedir su implementación — nunca se modifica `canchago` directamente desde este proyecto._
 
-Última verificación: 2026-08-29, contra el estado local actual de `canchago`.
+Última verificación: 2026-09-04, contra el estado local actual de `canchago`.
 
 ---
 
@@ -242,3 +242,12 @@ El listado de organizaciones usado como selector queda limitado al alcance del a
 - **2026-08-21** — Feature `009-perfil-ampliado-autogestion` y backend `017`: documentados los cinco métodos de perfil propio, campos opcionales, concurrencia, avatar WebP, límites y errores 413/415.
 - **2026-08-22** — Feature `008-registro-publico` y backend `016`: añadidos `POST /api/auth/register` (público, con rate limiting real) y los tres endpoints de `/api/organizaciones/access-requests` (§6.1); primer uso real de `TOO_MANY_REQUESTS` (429) en el backend, actualizada la nota de §7 en consecuencia.
 - **2026-08-14** — Feature `002-autenticacion`: contrato de auth (§2) **confirmado con prueba real** contra el backend corriendo local (Postgres nativo + Keycloak vía Docker + `yarn dev`), no solo leído. Flujo completo login → sesión → logout probado dos veces: primero con `curl` + cookie jar (usuario semilla `futbolista`/`canchago123`), después con Chrome headless real (Playwright) ejecutando el código real de `canchago-ionic`. Se corrigió la estrategia de "mismo origen" documentada en `tech-stack.md` §6 — la idea original (`Capacitor server.url` apuntando al backend) no es viable tal como estaba escrita; ver el post-mortem en ese documento. La solución real para desarrollo es un proxy de Vite; para el empaquetado nativo, el gap de §3 de este documento sigue abierto y sin resolver.
+
+### Gestión dedicada de permisos asociados a roles (backend 020, 2026-09-04)
+
+- La pantalla Ionic `/admin/roles/{roleId}/permissions` reutiliza el detalle del rol como snapshot completo y `GET /api/permisos` como catálogo global paginado; no existe catálogo RBAC hardcodeado en el bundle.
+- La ruta exige conjuntamente `roles.read`, `roles.manage` y `permisos.read`. El backend conserva la autoridad por endpoint y por alcance organizacional.
+- `PATCH /api/roles/{roleId}/permisos?organizationId={uuid}` recibe exclusivamente `{ permissionIds: UUID[] únicos, expectedUpdatedAt: ISO date-time }` y reemplaza atómicamente el conjunto completo.
+- Los roles `isSystem` son de solo lectura. Un actor no Administrador solo administra conjuntos que sean subconjunto de sus permisos efectivos; los recursos cross-tenant responden 404 opaco.
+- Un 409 conserva el borrador y obliga a recargar. Tras éxito se actualizan las queries de roles y se invalida `['auth','session']`; el backend recompone permisos desde PostgreSQL en cada request, por lo que altas y bajas son efectivas en la siguiente petición autenticada.
+- `Permission` continúa como catálogo persistido e inmutable por HTTP. No se introduce CRUD de permisos, jerarquía, dependencias o flags que el modelo no posee.

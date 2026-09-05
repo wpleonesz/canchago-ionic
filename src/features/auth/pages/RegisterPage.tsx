@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useHistory } from 'react-router-dom';
-import { IonRouterLink } from '@ionic/react';
+import { IonButton, IonRouterLink } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
 import AppPage from '../../../components/layout/AppPage';
 import { redirectToLogin } from '../../../services/api/endpoints/auth';
@@ -110,16 +110,16 @@ const RegisterPage: React.FC = () => {
         }
       >
         {!accountType && <AccountTypeStep onSelect={setAccountType} />}
-        {accountType === 'futbolista' && (
-          <PlayerRegisterForm onSubmit={handlePlayerSubmit} submitError={submitError} />
-        )}
+        {accountType === 'futbolista' && <PlayerRegisterForm onSubmit={handlePlayerSubmit} submitError={submitError} />}
         {accountType === 'gestor-de-cancha' && (
           <ManagerRegisterForm onSubmit={handleManagerSubmit} submitError={submitError} />
         )}
 
         {accountType && (
-          <button
+          <IonButton
             type="button"
+            fill="clear"
+            size="small"
             className="register-page__back"
             onClick={() => {
               setAccountType(null);
@@ -127,7 +127,7 @@ const RegisterPage: React.FC = () => {
             }}
           >
             ← Elegir otro tipo de cuenta
-          </button>
+          </IonButton>
         )}
 
         <p className="auth-shell__privacy">

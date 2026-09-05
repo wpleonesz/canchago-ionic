@@ -1,8 +1,9 @@
 import { IonIcon } from '@ionic/react';
-import { arrowForwardOutline } from 'ionicons/icons';
+import { arrowForwardOutline, checkmarkDoneOutline, hourglassOutline } from 'ionicons/icons';
 import { Link } from 'react-router-dom';
 import type { AdminNavigationGroup } from '../navigation/admin-navigation';
 import AppButton from '../../../components/common/AppButton';
+import AppStateMessage from '../../../components/layout/AppStateMessage';
 import { useLogoutMutation } from '../../auth/hooks/useSession';
 import ProfileSummary from '../../home/components/ProfileSummary';
 import { useSessionStore } from '../../../store/sessionStore';
@@ -28,10 +29,12 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ groups }) => {
 
   if (!user) {
     return (
-      <section className="admin-state" aria-live="polite">
-        <h2>Verificando tu acceso</h2>
-        <p>Estamos comprobando las capacidades de tu sesión.</p>
-      </section>
+      <AppStateMessage
+        icon={hourglassOutline}
+        eyebrow="Un momento"
+        title="Verificando tu acceso"
+        description="Estamos comprobando las capacidades de tu sesión."
+      />
     );
   }
 
@@ -50,11 +53,14 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ groups }) => {
       <ProfileSummary user={user} />
 
       {!hasAdminModules ? (
-        <section className="admin-state" role="status" aria-labelledby="admin-empty-title">
-          <p className="admin-state__eyebrow">CanchaGO</p>
-          <h2 id="admin-empty-title">Todo en orden</h2>
-          <p>Por ahora no hay herramientas adicionales para tu cuenta. Vuelve pronto.</p>
-        </section>
+        <AppStateMessage
+          icon={checkmarkDoneOutline}
+          role="status"
+          eyebrow="CanchaGO"
+          title="Todo en orden"
+          description="Por ahora no hay herramientas adicionales para tu cuenta. Vuelve pronto."
+          titleId="admin-empty-title"
+        />
       ) : (
         <section aria-labelledby="admin-modules-title">
           <div className="admin-dashboard__section-heading">

@@ -5,7 +5,7 @@ const validUser = {
   email: 'juan.perez@ejemplo.com',
   firstName: 'Juan',
   lastName: 'Pérez',
-  organizationId: 'org-1',
+  organizationId: '11111111-1111-4111-8111-111111111111',
 };
 
 describe('createUserFormSchema', () => {
@@ -14,7 +14,10 @@ describe('createUserFormSchema', () => {
   });
 
   it('accepts a valid user with roleIds', () => {
-    const result = createUserFormSchema.safeParse({ ...validUser, roleIds: ['role-1'] });
+    const result = createUserFormSchema.safeParse({
+      ...validUser,
+      roleIds: ['22222222-2222-4222-8222-222222222222'],
+    });
     expect(result.success).toBe(true);
   });
 

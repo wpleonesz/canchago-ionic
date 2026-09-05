@@ -3,6 +3,7 @@ import { useLocation, useHistory, useParams } from 'react-router-dom';
 import AppButton from '../../../components/common/AppButton';
 import AppErrorState from '../../../components/feedback/AppErrorState';
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
+import AppDetailActions from '../../../components/layout/AppDetailActions';
 import { NotFoundError } from '../../../services/api/errorMapper';
 import PermissionGuard from '../../auth/components/PermissionGuard';
 import { useRole } from '../hooks/useRoles';
@@ -44,13 +45,19 @@ const RoleDetailPage: React.FC = () => {
           <h1 id="role-detail-title">{role.name}</h1>
           <p>{role.description ?? 'Sin descripción'}</p>
         </div>
-        <div className="roles-page-header__actions">
+        <AppDetailActions className="roles-page-header__actions">
           <AppButton fill="outline" onClick={() => history.push('/admin/roles')}>
             Volver
           </AppButton>
           {!role.isSystem && (
             <PermissionGuard permission="roles.manage">
               <PermissionGuard permission="permisos.read">
+                <AppButton
+                  fill="outline"
+                  onClick={() => history.push(`/admin/roles/${role.id}/permissions?organizationId=${organizationId}`)}
+                >
+                  Gestionar permisos
+                </AppButton>
                 <AppButton
                   onClick={() => history.push(`/admin/roles/${role.id}/edit?organizationId=${organizationId}`)}
                 >
@@ -59,7 +66,7 @@ const RoleDetailPage: React.FC = () => {
               </PermissionGuard>
             </PermissionGuard>
           )}
-        </div>
+        </AppDetailActions>
       </header>
 
       <article className="role-detail-card">

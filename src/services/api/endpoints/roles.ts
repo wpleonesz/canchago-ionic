@@ -9,6 +9,7 @@ import type {
   RoleListQuery,
   RoleListResponse,
   UpdateRoleRequest,
+  UpdateRolePermissionsRequest,
 } from '../../../types/api/roles';
 
 interface RawRoleDto extends Omit<RoleDto, 'permissionsCount'> {
@@ -61,6 +62,17 @@ export const updateRole = async (
   body: UpdateRoleRequest,
 ): Promise<RoleDetailDto> => {
   const { data } = await apiClient.patch<{ data: RawRoleDetailDto }>(`/roles/${roleId}`, body, {
+    params: { organizationId },
+  });
+  return mapRoleDetail(data.data);
+};
+
+export const updateRolePermissions = async (
+  roleId: string,
+  organizationId: string,
+  body: UpdateRolePermissionsRequest,
+): Promise<RoleDetailDto> => {
+  const { data } = await apiClient.patch<{ data: RawRoleDetailDto }>(`/roles/${roleId}/permisos`, body, {
     params: { organizationId },
   });
   return mapRoleDetail(data.data);

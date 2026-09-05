@@ -6,9 +6,10 @@ interface AccessRequestListItemProps {
   request: AccessRequestDto;
   onApprove: (request: AccessRequestDto) => void;
   onReject: (request: AccessRequestDto) => void;
+  isBusy?: boolean;
 }
 
-const AccessRequestListItem: React.FC<AccessRequestListItemProps> = ({ request, onApprove, onReject }) => {
+const AccessRequestListItem: React.FC<AccessRequestListItemProps> = ({ request, onApprove, onReject, isBusy = false }) => {
   const venueNames = request.organization.venues.map(venue => venue.name).join(', ');
 
   return (
@@ -27,10 +28,10 @@ const AccessRequestListItem: React.FC<AccessRequestListItemProps> = ({ request, 
           {request.requester.email})
         </p>
         <div className="access-request-list-item__actions">
-          <AppButton fill="clear" size="small" onClick={() => onApprove(request)}>
+          <AppButton fill="clear" size="small" disabled={isBusy} onClick={() => onApprove(request)}>
             Aprobar
           </AppButton>
-          <AppButton fill="clear" color="danger" size="small" onClick={() => onReject(request)}>
+          <AppButton fill="clear" color="danger" size="small" disabled={isBusy} onClick={() => onReject(request)}>
             Rechazar
           </AppButton>
         </div>

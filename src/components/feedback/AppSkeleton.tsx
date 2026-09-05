@@ -5,9 +5,9 @@ interface AppSkeletonProps {
 }
 
 const AppSkeleton: React.FC<AppSkeletonProps> = ({ rows = 5 }) => (
-  <IonList aria-hidden="true" className="app-skeleton">
+  <IonList role="status" aria-label="Cargando información" className="app-skeleton">
     {Array.from({ length: rows }, (_, index) => (
-      <IonItem key={index} lines="full">
+      <IonItem key={index} lines="full" aria-hidden="true">
         <IonLabel>
           <IonSkeletonText animated style={{ width: '60%' }} />
           <IonSkeletonText animated style={{ width: '40%' }} />

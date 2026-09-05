@@ -1,0 +1,101 @@
+.app-input,
+.app-select,
+.app-textarea {
+  width: 100%;
+  min-width: 0;
+  --background: var(--app-color-surface-muted);
+  --border-color: var(--app-color-border);
+  --border-radius: var(--app-radius-sm);
+  --color: var(--app-color-text);
+  --highlight-color-focused: var(--app-color-brand);
+  --padding-start: 14px;
+  --padding-end: 10px;
+}
+
+.app-input,
+.app-select {
+  min-height: 58px;
+}
+
+.app-textarea {
+  min-height: 96px;
+}
+
+.app-input.ion-invalid,
+.app-select.ion-invalid,
+.app-textarea.ion-invalid {
+  margin-bottom: 8px;
+}
+
+.app-button {
+  min-width: 0;
+  min-height: 48px;
+  margin: 2px 0 0;
+  --border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.app-button::part(native) {
+  white-space: normal;
+}
+
+form,
+fieldset,
+form > *,
+fieldset > * {
+  min-width: 0;
+}
+
+form ion-text[role='alert'],
+form ion-text[role='status'] {
+  display: block;
+  overflow-wrap: anywhere;
+  border-radius: var(--app-radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+form ion-text[role='alert'] p,
+form ion-text[role='status'] p {
+  margin: 0;
+  padding: 12px 14px;
+}
+
+form ion-text[role='alert'] {
+  color: var(--app-color-danger-text);
+  background: var(--app-color-danger-soft);
+}
+
+.app-interaction-alert {
+  --max-width: min(420px, calc(100vw - 32px));
+}
+
+.app-interaction-alert .alert-title,
+.app-interaction-alert .alert-message,
+.app-interaction-alert .alert-button {
+  overflow-wrap: anywhere;
+}
+
+.app-interaction-alert .alert-button {
+  min-height: 44px;
+  white-space: normal;
+}
+
+@media (max-width: 380px) {
+  .app-interaction-alert {
+    --max-width: calc(100vw - 20px);
+  }
+
+  .app-interaction-alert .alert-button-group {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-button {
+    --padding-start: 14px;
+    --padding-end: 14px;
+  }
+}

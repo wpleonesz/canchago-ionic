@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import AppButton from '../../../components/common/AppButton';
 import type { OrganizationDto } from '../../../types/api/organizaciones';
 import PermissionGuard from '../../auth/components/PermissionGuard';
+import { getOrganizationStatusColor, getOrganizationStatusLabel } from '../organizationStatus';
 
 interface OrganizationListItemProps {
   organization: OrganizationDto;
@@ -17,7 +18,9 @@ const OrganizationListItem: React.FC<OrganizationListItemProps> = ({ organizatio
       <IonLabel>
         <div className="organization-list-item__title">
           <h2>{organization.name}</h2>
-          <IonBadge color={organization.status === 'ACTIVE' ? 'success' : 'medium'}>{organization.status}</IonBadge>
+          <IonBadge color={getOrganizationStatusColor(organization.status)}>
+            {getOrganizationStatusLabel(organization.status)}
+          </IonBadge>
         </div>
         {organization.taxIdentification && <p>{organization.taxIdentification}</p>}
         <p className="organization-list-item__meta">

@@ -1,12 +1,26 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRole, getPermissions, getRole, getRoles, updateRole } from '../../../services/api/endpoints/roles';
-import type { CreateRoleRequest, RoleListQuery, UpdateRoleRequest } from '../../../types/api/roles';
+import {
+  createRole,
+  getPermissions,
+  getRole,
+  getRoles,
+  updateRole,
+  updateRolePermissions,
+} from '../../../services/api/endpoints/roles';
+import type {
+  CreateRoleRequest,
+  PermissionListQuery,
+  RoleListQuery,
+  UpdateRolePermissionsRequest,
+  UpdateRoleRequest,
+} from '../../../types/api/roles';
+import { SESSION_QUERY_KEY } from '../../auth/hooks/useSession';
 
 export const roleKeys = {
   all: ['roles'] as const,
   list: (query: RoleListQuery) => ['roles', 'list', query] as const,
   detail: (organizationId: string, roleId: string) => ['roles', 'detail', organizationId, roleId] as const,
-  permissions: ['permissions'] as const,
+  permissions: (query: Pick<PermissionListQuery, 'search' | 'module'> = {}) => ['permissions', query] as const,
 };
 
 export const useRoles = (organizationId: string | undefined, page = 1, pageSize = 50) =>
@@ -33,11 +47,11 @@ export const useRole = (roleId: string, organizationId: string) =>
     staleTime: 15 * 1000,
   });
 
-export const usePermissions = () =>
+export const usePermissions = (query: Pick<PermissionListQuery, 'search' | 'module'> = {}) =>
   useInfiniteQuery({
-    queryKey: roleKeys.permissions,
+    queryKey: roleKeys.permissions(query),
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => getPermissions({ page: pageParam, pageSize: 100 }),
+    queryFn: ({ pageParam }) => getPermissions({ ...query, page: pageParam, pageSize: 100 }),
     getNextPageParam: lastPage => (lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined),
     staleTime: 5 * 60 * 1000,
   });
@@ -60,6 +74,21 @@ export const useUpdateRole = (roleId: string, organizationId: string) => {
     onSuccess: async role => {
       queryClient.setQueryData(roleKeys.detail(organizationId, roleId), role);
       await queryClient.invalidateQueries({ queryKey: roleKeys.all });
+    },
+  });
+};
+
+export const useUpdateRolePermissions = (roleId: string, organizationId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateRolePermissionsRequest) => updateRolePermissions(roleId, organizationId, body),
+    retry: false,
+    onSuccess: async role => {
+      queryClient.setQueryData(roleKeys.detail(organizationId, roleId), role);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: roleKeys.all }),
+        queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY }),
+      ]);
     },
   });
 };

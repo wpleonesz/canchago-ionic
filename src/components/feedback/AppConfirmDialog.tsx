@@ -1,4 +1,4 @@
-import { IonAlert } from '@ionic/react';
+import AppInteractionAlert from './AppInteractionAlert';
 
 interface AppConfirmDialogProps {
   isOpen: boolean;
@@ -23,11 +23,12 @@ const AppConfirmDialog: React.FC<AppConfirmDialogProps> = ({
   onConfirm,
   onCancel,
 }) => (
-  <IonAlert
+  <AppInteractionAlert
     isOpen={isOpen}
+    kind={isDestructive ? 'warning' : 'info'}
     header={header}
     message={message}
-    onDidDismiss={onCancel}
+    onDismiss={onCancel}
     buttons={[
       { text: cancelText, role: 'cancel', handler: onCancel },
       {

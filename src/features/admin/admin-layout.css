@@ -257,7 +257,7 @@
 /* Resumen de perfil (fusionado desde la antigua /home) y cierre de sesión — ver AdminDashboardPage. */
 .admin-dashboard .profile-summary {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 16px;
   margin-bottom: 28px;
   padding: 20px;

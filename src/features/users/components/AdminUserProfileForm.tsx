@@ -3,6 +3,7 @@ import { IonText } from '@ionic/react';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import AppButton from '../../../components/common/AppButton';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import type { AdminUserProfileDto } from '../../../types/api/users';
 import { adminUserProfileFormSchema, type AdminUserProfileFormValues } from '../../../validation/user-profile';
@@ -113,16 +114,18 @@ const AdminUserProfileForm: React.FC<AdminUserProfileFormProps> = ({
         </dl>
       </section>
 
-      {submitError && (
-        <IonText className="user-form__error" role="alert" aria-live="assertive">
-          <p>{submitError}</p>
-        </IonText>
-      )}
-      {successMessage && (
-        <IonText color="success" role="status" aria-live="polite">
-          <p>{successMessage}</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={Boolean(submitError)}
+        kind="error"
+        header="No se pudo actualizar el perfil"
+        message={submitError ?? ''}
+      />
+      <AppInteractionAlert
+        isOpen={!submitError && Boolean(successMessage)}
+        kind="success"
+        header="Perfil actualizado"
+        message={successMessage ?? ''}
+      />
       {Object.keys(errors).length > 0 && !submitError && (
         <IonText className="user-form__error" role="alert">
           <p>Revisa los campos marcados antes de continuar.</p>

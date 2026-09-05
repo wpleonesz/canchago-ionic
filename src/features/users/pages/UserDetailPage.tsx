@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { IonBadge, IonChip, IonLabel } from '@ionic/react';
+import { IonBadge, IonChip, IonIcon, IonLabel } from '@ionic/react';
+import { closeCircleOutline } from 'ionicons/icons';
 import AppButton from '../../../components/common/AppButton';
 import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
+import AppInteractionAlert, { type AppInteractionAlertKind } from '../../../components/feedback/AppInteractionAlert';
 import AppErrorState from '../../../components/feedback/AppErrorState';
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
+import AppDetailActions from '../../../components/layout/AppDetailActions';
 import PermissionGuard from '../../auth/components/PermissionGuard';
 import { useDeactivateUser } from '../hooks/useUserMutations';
 import { useAssignUserRoles, useRemoveUserRole } from '../hooks/useUserRoles';
 import { useUser } from '../hooks/useUsers';
 import UserRolesEditor from '../components/UserRolesEditor';
 import type { UserRoleDto } from '../../../types/api/users';
+import { AppClientError } from '../../../services/api/errorMapper';
 import '../users.css';
 
 const UserDetailPage: React.FC = () => {
@@ -20,6 +24,9 @@ const UserDetailPage: React.FC = () => {
   const [roleToRemove, setRoleToRemove] = useState<UserRoleDto | null>(null);
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
   const [rolesToAdd, setRolesToAdd] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<{ kind: AppInteractionAlertKind; header: string; message: string } | null>(
+    null,
+  );
 
   const assignRolesMutation = useAssignUserRoles(userId);
   const removeRoleMutation = useRemoveUserRole(userId);
@@ -35,16 +42,60 @@ const UserDetailPage: React.FC = () => {
 
   const handleAddRoles = (): void => {
     if (rolesToAdd.length === 0) return;
-    assignRolesMutation.mutate(rolesToAdd, { onSuccess: () => setRolesToAdd([]) });
+    assignRolesMutation.mutate(rolesToAdd, {
+      onSuccess: () => {
+        setRolesToAdd([]);
+        setFeedback({
+          kind: 'success',
+          header: 'Roles actualizados',
+          message: 'Los roles se asignaron correctamente.',
+        });
+      },
+      onError: error =>
+        setFeedback({
+          kind: 'error',
+          header: 'No se pudieron asignar los roles',
+          message: error instanceof AppClientError ? error.message : 'Intenta nuevamente.',
+        }),
+    });
   };
 
   const handleConfirmRemoveRole = (): void => {
     if (!roleToRemove) return;
-    removeRoleMutation.mutate(roleToRemove.id, { onSettled: () => setRoleToRemove(null) });
+    const role = roleToRemove;
+    setRoleToRemove(null);
+    removeRoleMutation.mutate(role.id, {
+      onSuccess: () =>
+        setFeedback({
+          kind: 'success',
+          header: 'Rol removido',
+          message: `El rol "${role.name}" fue removido correctamente.`,
+        }),
+      onError: error =>
+        setFeedback({
+          kind: 'error',
+          header: 'No se pudo remover el rol',
+          message: error instanceof AppClientError ? error.message : 'Intenta nuevamente.',
+        }),
+    });
   };
 
   const handleConfirmDeactivate = (): void => {
-    deactivateMutation.mutate(user.id, { onSettled: () => setIsDeactivateOpen(false) });
+    setIsDeactivateOpen(false);
+    deactivateMutation.mutate(user.id, {
+      onSuccess: () =>
+        setFeedback({
+          kind: 'success',
+          header: 'Usuario desactivado',
+          message: `${user.firstName} ${user.lastName} fue desactivado correctamente.`,
+        }),
+      onError: error =>
+        setFeedback({
+          kind: 'error',
+          header: 'No se pudo desactivar el usuario',
+          message: error instanceof AppClientError ? error.message : 'Intenta nuevamente.',
+        }),
+    });
   };
 
   const roleOrganizationId = user.roles[0]?.organizationId ?? undefined;
@@ -61,7 +112,7 @@ const UserDetailPage: React.FC = () => {
         <IonBadge color={user.active ? 'success' : 'medium'}>{user.active ? 'Activo' : 'Inactivo'}</IonBadge>
       </header>
 
-      <div className="user-detail-page__actions">
+      <AppDetailActions className="user-detail-page__actions">
         <PermissionGuard permission="users.update">
           <AppButton fill="outline" onClick={() => history.push(`/admin/users/${user.id}/edit`)}>
             Editar perfil
@@ -70,12 +121,17 @@ const UserDetailPage: React.FC = () => {
 
         <PermissionGuard permission="users.delete">
           {user.active && (
-            <AppButton fill="outline" color="danger" onClick={() => setIsDeactivateOpen(true)}>
+            <AppButton
+              fill="outline"
+              color="danger"
+              isLoading={deactivateMutation.isPending}
+              onClick={() => setIsDeactivateOpen(true)}
+            >
               Desactivar
             </AppButton>
           )}
         </PermissionGuard>
-      </div>
+      </AppDetailActions>
 
       <section aria-labelledby="user-detail-roles-title">
         <h2 id="user-detail-roles-title">Roles asignados</h2>
@@ -89,14 +145,16 @@ const UserDetailPage: React.FC = () => {
                 <IonChip>
                   <IonLabel>{role.name}</IonLabel>
                   <PermissionGuard permission="users.manage">
-                    <button
-                      type="button"
+                    <AppButton
+                      fill="clear"
+                      size="small"
                       className="user-detail-page__remove-role"
+                      disabled={removeRoleMutation.isPending}
                       aria-label={`Remover rol ${role.name}`}
                       onClick={() => setRoleToRemove(role)}
                     >
-                      ×
-                    </button>
+                      <IonIcon icon={closeCircleOutline} slot="icon-only" aria-hidden="true" />
+                    </AppButton>
                   </PermissionGuard>
                 </IonChip>
               </li>
@@ -111,6 +169,7 @@ const UserDetailPage: React.FC = () => {
               value={rolesToAdd}
               onChange={setRolesToAdd}
               excludeRoleIds={user.roles.map(role => role.id)}
+              disabled={assignRolesMutation.isPending}
             />
             <AppButton
               fill="outline"
@@ -132,6 +191,13 @@ const UserDetailPage: React.FC = () => {
         isDestructive
         onConfirm={handleConfirmRemoveRole}
         onCancel={() => setRoleToRemove(null)}
+      />
+      <AppInteractionAlert
+        isOpen={Boolean(feedback)}
+        kind={feedback?.kind ?? 'info'}
+        header={feedback?.header}
+        message={feedback?.message ?? ''}
+        onDismiss={() => setFeedback(null)}
       />
 
       <AppConfirmDialog

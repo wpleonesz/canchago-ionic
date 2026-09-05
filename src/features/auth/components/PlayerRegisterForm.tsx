@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { IonInputPasswordToggle, IonText } from '@ionic/react';
+import { IonInputPasswordToggle } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import { playerRegisterFormSchema, type PlayerRegisterFormValues } from '../../../validation/register';
 
@@ -91,11 +92,12 @@ const PlayerRegisterForm: React.FC<PlayerRegisterFormProps> = ({ onSubmit, submi
         )}
       />
 
-      {submitError && (
-        <IonText className="auth-message auth-message--error" role="alert" aria-live="polite">
-          <p>{submitError}</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={Boolean(submitError)}
+        kind="error"
+        header="No se pudo crear la cuenta"
+        message={submitError ?? ''}
+      />
 
       <AppButton expand="block" type="submit" isLoading={isSubmitting}>
         Crear cuenta

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import AppButton from '../../../components/common/AppButton';
 import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
+import AppInteractionAlert, { type AppInteractionAlertKind } from '../../../components/feedback/AppInteractionAlert';
 import AppDataList from '../../../components/common/AppDataList';
 import AccessRequestListItem from '../components/AccessRequestListItem';
 import { useAccessRequests, useApproveAccessRequest, useRejectAccessRequest } from '../hooks/useAccessRequests';
 import type { AccessRequestDto } from '../../../types/api/access-requests';
+import { AppClientError } from '../../../services/api/errorMapper';
 import '../access-requests.css';
 
 const AccessRequestsPage: React.FC = () => {
@@ -13,6 +15,11 @@ const AccessRequestsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [requestToApprove, setRequestToApprove] = useState<AccessRequestDto | null>(null);
   const [requestToReject, setRequestToReject] = useState<AccessRequestDto | null>(null);
+  const [feedback, setFeedback] = useState<{
+    kind: AppInteractionAlertKind;
+    header: string;
+    message: string;
+  } | null>(null);
 
   const { data, isLoading, isError, refetch } = useAccessRequests({
     page,
@@ -25,16 +32,50 @@ const AccessRequestsPage: React.FC = () => {
 
   const handleConfirmApprove = (): void => {
     if (!requestToApprove) return;
-    approveMutation.mutate(requestToApprove.id, {
-      onSettled: () => setRequestToApprove(null),
+    const request = requestToApprove;
+    setRequestToApprove(null);
+    approveMutation.mutate(request.id, {
+      onSuccess: () =>
+        setFeedback({
+          kind: 'success',
+          header: 'Solicitud aprobada',
+          message: `La organización "${request.organization.name}" y sus sedes quedaron activas.`,
+        }),
+      onError: error =>
+        setFeedback({
+          kind: 'error',
+          header: 'No se pudo aprobar la solicitud',
+          message:
+            error instanceof AppClientError
+              ? error.message
+              : 'Intenta nuevamente. Si el problema continúa, actualiza el listado.',
+        }),
     });
   };
 
   const handleConfirmReject = (): void => {
     if (!requestToReject) return;
+    const request = requestToReject;
+    setRequestToReject(null);
     rejectMutation.mutate(
-      { requestId: requestToReject.id },
-      { onSettled: () => setRequestToReject(null) },
+      { requestId: request.id },
+      {
+        onSuccess: () =>
+          setFeedback({
+            kind: 'success',
+            header: 'Solicitud rechazada',
+            message: `La solicitud de "${request.organization.name}" fue rechazada.`,
+          }),
+        onError: error =>
+          setFeedback({
+            kind: 'error',
+            header: 'No se pudo rechazar la solicitud',
+            message:
+              error instanceof AppClientError
+                ? error.message
+                : 'Intenta nuevamente. Si el problema continúa, actualiza el listado.',
+          }),
+      },
     );
   };
 
@@ -58,6 +99,7 @@ const AccessRequestsPage: React.FC = () => {
             request={request}
             onApprove={setRequestToApprove}
             onReject={setRequestToReject}
+            isBusy={approveMutation.isPending || rejectMutation.isPending}
           />
         )}
         isLoading={isLoading}
@@ -95,6 +137,14 @@ const AccessRequestsPage: React.FC = () => {
         isDestructive
         onConfirm={handleConfirmReject}
         onCancel={() => setRequestToReject(null)}
+      />
+
+      <AppInteractionAlert
+        isOpen={Boolean(feedback)}
+        kind={feedback?.kind ?? 'info'}
+        header={feedback?.header}
+        message={feedback?.message ?? ''}
+        onDismiss={() => setFeedback(null)}
       />
     </section>
   );

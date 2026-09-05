@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { IonIcon, IonList } from '@ionic/react';
+import { Fragment, type ReactNode } from 'react';
+import { IonButtons, IonIcon, IonLabel, IonList, IonToolbar } from '@ionic/react';
 import { chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import type { PaginationMeta } from '../../types/api/common';
 import AppEmptyState from '../feedback/AppEmptyState';
@@ -49,37 +49,45 @@ const AppDataList = <T,>({
   }
 
   return (
-    <div className="app-data-list">
-      <IonList>{items.map(item => <div key={keyExtractor(item)}>{renderItem(item)}</div>)}</IonList>
+    <Fragment>
+      <IonList className="app-data-list">
+        {items.map(item => (
+          <Fragment key={keyExtractor(item)}>{renderItem(item)}</Fragment>
+        ))}
+      </IonList>
 
       {meta && meta.totalPages > 1 && onPageChange && (
-        <nav className="app-data-list__pagination" aria-label="Paginación">
-          <AppButton
-            fill="clear"
-            size="small"
-            disabled={meta.page <= 1}
-            onClick={() => onPageChange(meta.page - 1)}
-            aria-label="Página anterior"
-          >
-            <IonIcon icon={chevronBackOutline} slot="icon-only" />
-          </AppButton>
+        <IonToolbar className="app-data-list__pagination" aria-label="Paginación">
+          <IonButtons slot="start">
+            <AppButton
+              fill="clear"
+              size="small"
+              disabled={meta.page <= 1}
+              onClick={() => onPageChange(meta.page - 1)}
+              aria-label="Página anterior"
+            >
+              <IonIcon icon={chevronBackOutline} slot="icon-only" />
+            </AppButton>
+          </IonButtons>
 
-          <span aria-live="polite">
+          <IonLabel aria-live="polite">
             Página {meta.page} de {meta.totalPages}
-          </span>
+          </IonLabel>
 
-          <AppButton
-            fill="clear"
-            size="small"
-            disabled={meta.page >= meta.totalPages}
-            onClick={() => onPageChange(meta.page + 1)}
-            aria-label="Página siguiente"
-          >
-            <IonIcon icon={chevronForwardOutline} slot="icon-only" />
-          </AppButton>
-        </nav>
+          <IonButtons slot="end">
+            <AppButton
+              fill="clear"
+              size="small"
+              disabled={meta.page >= meta.totalPages}
+              onClick={() => onPageChange(meta.page + 1)}
+              aria-label="Página siguiente"
+            >
+              <IonIcon icon={chevronForwardOutline} slot="icon-only" />
+            </AppButton>
+          </IonButtons>
+        </IonToolbar>
       )}
-    </div>
+    </Fragment>
   );
 };
 

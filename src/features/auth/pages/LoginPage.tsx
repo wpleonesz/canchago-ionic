@@ -4,8 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
-import { IonInputPasswordToggle, IonRouterLink, IonText } from '@ionic/react';
+import { IonInputPasswordToggle, IonRouterLink } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppInput from '../../../components/forms/AppInput';
 import AppPage from '../../../components/layout/AppPage';
 import { loginWithPassword, redirectToLogin } from '../../../services/api/endpoints/auth';
@@ -24,11 +25,12 @@ const WebLogin: React.FC<{ hasAuthError: boolean }> = ({ hasAuthError }) => {
 
   return (
     <AuthShell title="Te damos la bienvenida" description="Continúa con tu cuenta segura de CanchaGO.">
-      {hasAuthError && (
-        <IonText className="auth-message auth-message--error" role="alert">
-          <p>No se pudo completar el inicio de sesión. Intenta nuevamente.</p>
-        </IonText>
-      )}
+      <AppInteractionAlert
+        isOpen={hasAuthError}
+        kind="error"
+        header="Inicio de sesión incompleto"
+        message="No se pudo completar el inicio de sesión. Intenta nuevamente."
+      />
       <AppButton
         expand="block"
         isLoading={isNavigating}
@@ -117,11 +119,13 @@ const NativeLoginForm: React.FC<{ defaultUsername?: string }> = ({ defaultUserna
           )}
         />
 
-        {submitError && (
-          <IonText className="auth-message auth-message--error" role="alert" aria-live="polite">
-            <p>{submitError}</p>
-          </IonText>
-        )}
+        <AppInteractionAlert
+          isOpen={Boolean(submitError)}
+          kind="error"
+          header="No se pudo iniciar sesión"
+          message={submitError ?? ''}
+          onDismiss={() => setSubmitError(null)}
+        />
 
         <AppButton expand="block" type="submit" isLoading={isSubmitting}>
           Iniciar sesión

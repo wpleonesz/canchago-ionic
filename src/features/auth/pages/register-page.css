@@ -4,25 +4,22 @@
 }
 
 .account-type-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 16px;
-  min-height: 84px;
-  padding: 16px;
+  --background: var(--app-color-surface-muted);
+  --border-radius: var(--app-radius-md);
+  --inner-padding-end: 16px;
+  --min-height: 84px;
+  --padding-start: 16px;
+  margin: 0;
   border: 1px solid var(--app-color-border);
   border-radius: var(--app-radius-md);
+  box-shadow: none;
   color: inherit;
-  background: var(--app-color-surface-muted);
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
 }
 
 .account-type-card:hover,
 .account-type-card:focus-visible {
+  --background: var(--app-color-brand-soft);
   border-color: var(--app-color-brand);
-  background: var(--app-color-brand-soft);
 }
 
 .account-type-card__icon {
@@ -34,6 +31,7 @@
   color: var(--ion-color-primary-contrast);
   background: var(--ion-color-primary);
   font-size: 22px;
+  margin-inline-end: 16px;
 }
 
 .account-type-card__copy {
@@ -79,18 +77,32 @@
 }
 
 .register-page__back {
+  width: 100%;
+  min-height: 44px;
   margin: 4px 0 0;
-  padding: 8px 0;
-  border: 0;
-  background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
   color: var(--app-color-text-muted);
-  font: inherit;
   font-size: 0.88rem;
   text-align: start;
-  cursor: pointer;
 }
 
 .register-page__back:hover,
 .register-page__back:focus-visible {
   color: var(--app-color-brand-strong);
+}
+
+@media (max-width: 380px) {
+  .account-type-card {
+    --inner-padding-end: 14px;
+    --padding-start: 14px;
+  }
+
+  .account-type-card__icon {
+    margin-inline-end: 12px;
+  }
+
+  .account-type-card__arrow {
+    display: none;
+  }
 }

@@ -15,14 +15,14 @@ interface AppSelectProps extends Omit<ComponentProps<typeof IonSelect>, 'label' 
 
 // Nunca acepta un valor libre: solo las opciones que se le pasan (requisito de la feature 005 —
 // el catálogo de roles/organizaciones siempre viene del backend, nunca hardcodeado ni editable).
-const AppSelect: React.FC<AppSelectProps> = ({ label, error, options, placeholder, ...rest }) => (
+const AppSelect: React.FC<AppSelectProps> = ({ label, error, options, placeholder, className, ...rest }) => (
   <IonSelect
     label={label}
     labelPlacement="stacked"
     fill="outline"
     interface="action-sheet"
     placeholder={placeholder}
-    className={`app-select${error ? ' ion-invalid ion-touched' : ''}`}
+    className={`app-select${error ? ' ion-invalid ion-touched' : ''}${className ? ` ${className}` : ''}`}
     errorText={error}
     aria-invalid={Boolean(error)}
     {...rest}

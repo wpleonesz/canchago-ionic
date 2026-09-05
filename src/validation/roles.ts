@@ -22,4 +22,11 @@ export const roleFormSchema = z.object({
   }),
 });
 
+export const rolePermissionSelectionSchema = z
+  .array(z.string().uuid())
+  .max(500, 'No se pueden asignar más de 500 permisos.')
+  .refine(values => new Set(values).size === values.length, {
+    message: 'No puede haber permisos duplicados.',
+  });
+
 export type RoleFormValues = z.infer<typeof roleFormSchema>;

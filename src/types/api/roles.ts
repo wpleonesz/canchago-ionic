@@ -64,3 +64,8 @@ export interface UpdateRoleRequest {
   permissionIds?: string[];
   expectedUpdatedAt: string;
 }
+
+export interface UpdateRolePermissionsRequest {
+  permissionIds: string[];
+  expectedUpdatedAt: string;
+}

@@ -60,11 +60,14 @@ describe('PlayerRegisterForm', () => {
     });
   });
 
-  it('shows the submitError banner when provided', () => {
-    const { getByText } = render(
+  it('shows the submitError in the shared Ionic alert when provided', () => {
+    const { container } = render(
       <PlayerRegisterForm onSubmit={vi.fn()} submitError="Ya existe una cuenta con ese correo." />,
     );
 
-    expect(getByText('Ya existe una cuenta con ese correo.')).toBeInTheDocument();
+    const alert = container.ownerDocument.querySelector('ion-alert');
+    expect(alert).toHaveAttribute('header', 'No se pudo crear la cuenta');
+    expect(alert).toHaveAttribute('message', 'Ya existe una cuenta con ese correo.');
+    expect(alert).toHaveAttribute('is-open');
   });
 });

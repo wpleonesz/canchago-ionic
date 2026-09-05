@@ -6,22 +6,128 @@
   gap: 18px;
 }
 
-.own-profile-page { display: grid; gap: 1rem; max-width: 920px; margin: 0 auto; }
-.own-profile-page > header h1, .own-profile-card h2 { margin: 0; }
-.own-profile-card { background: var(--ion-card-background, #fff); border: 1px solid var(--ion-color-light-shade); border-radius: 16px; padding: 1rem; display: grid; gap: 1rem; box-shadow: 0 2px 10px rgb(0 0 0 / 6%); }
-.own-profile-form, .own-profile-links { display: grid; gap: 1rem; }
-.own-profile-actions { position: sticky; bottom: 0; z-index: 2; display: flex; justify-content: flex-end; gap: .5rem; padding: .75rem; background: color-mix(in srgb, var(--ion-background-color, #fff) 92%, transparent); backdrop-filter: blur(8px); }
-.profile-photo { grid-template-columns: auto 1fr; align-items: center; }
-.profile-photo__avatar, .app-avatar { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); font-weight: 700; font-size: 1.5rem; flex: 0 0 auto; }
-.app-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.profile-photo__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.profile-photo__error { color: var(--ion-color-danger); }
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.users-list-page {
+  width: 100%;
+  max-width: var(--app-content-max-width);
+  min-width: 0;
+  margin-inline: auto;
+  padding: 0;
+}
+
+.own-profile-page {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+  max-width: 920px;
+  margin: 0 auto;
+}
+.own-profile-page > header h1,
+.own-profile-card h2 {
+  margin: 0;
+}
+.own-profile-card {
+  width: 100%;
+  min-width: 0;
+  background: var(--ion-card-background, #fff);
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 16px;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 6%);
+}
+.own-profile-form,
+.own-profile-links {
+  display: grid;
+  gap: 1rem;
+}
+.own-profile-card > *,
+.profile-photo > div {
+  min-width: 0;
+}
+.own-profile-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--ion-background-color, #fff) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+.profile-photo {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+.profile-photo__avatar,
+.app-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-weight: 700;
+  font-size: 1.5rem;
+  flex: 0 0 auto;
+}
+.app-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-photo__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 @media (max-width: 600px) {
-  .profile-photo { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-  .own-profile-actions { justify-content: stretch; }
-  .own-profile-actions .app-button { flex: 1; }
+  .profile-photo {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+  .own-profile-actions {
+    justify-content: stretch;
+  }
+  .own-profile-actions .app-button {
+    flex: 1;
+  }
+
+  .profile-photo__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .profile-photo__actions .app-button {
+    width: 100%;
+  }
+}
+
+@media (min-width: 760px) {
+  .own-profile-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .own-profile-links > div:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .user-profile-edit-page {
@@ -116,39 +222,116 @@
 }
 
 .users-list-page__toolbar {
-  display: grid;
-  gap: 12px;
+  margin: 0 -5px;
 }
 
-@media (min-width: 720px) {
-  .users-list-page__toolbar {
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
+.users-list-page__toolbar ion-searchbar {
+  --box-shadow: none;
+  padding: 0;
+}
+
+.users-list-page__toolbar ion-col,
+.users-list-page > ion-row,
+.users-list-page > ion-row > ion-col {
+  width: 100%;
+  min-width: 0;
+}
+
+.user-list-item__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-list-item__title h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.user-list-item__actions {
+  flex-shrink: 0;
+  margin-inline-start: 4px;
+}
+
+.user-list-item,
+.user-list-item ion-label {
+  min-width: 0;
+}
+
+.user-list-item {
+  width: 100%;
+}
+
+.user-list-item ion-label > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-data-list {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--app-radius-md);
+}
+
+@media (max-width: 575px) {
+  .user-list-item__title {
+    gap: 4px 8px;
+  }
+
+  .user-list-item__title h2 {
+    flex-basis: 100%;
+    font-size: 1rem;
+  }
+
+  .user-list-item__actions .app-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-list-item {
+    --padding-start: 12px;
+    --inner-padding-end: 8px;
   }
 }
 
 .app-data-list__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 0;
+  --background: transparent;
+  --min-height: 40px;
   color: var(--app-color-text-muted);
   font-size: 0.85rem;
 }
 
 .app-empty-state,
 .app-error-state {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 48px 16px;
+  --background: var(--app-color-surface);
+  --border-radius: var(--app-radius-md);
+  --inner-padding-end: 16px;
+  --min-height: 132px;
+  --padding-start: 16px;
+  margin: 0;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
   color: var(--app-color-text-muted);
   text-align: center;
 }
 
+.app-empty-state ion-label,
+.app-error-state ion-label {
+  min-width: 0;
+  white-space: normal;
+}
+
 .app-empty-state ion-icon,
 .app-error-state ion-icon {
+  margin-inline-end: 14px;
   font-size: 32px;
   color: var(--app-color-brand-strong);
 }
@@ -170,9 +353,31 @@
 }
 
 .user-form {
+  width: 100%;
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.user-form__section {
   display: grid;
   gap: 16px;
-  max-width: 520px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--app-color-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-color-surface);
+}
+
+.user-form__section-heading h2,
+.user-form__section-heading p {
+  margin: 0;
+}
+
+.user-form__section-heading p {
+  margin-top: 5px;
+  color: var(--app-color-text-muted);
+  line-height: 1.45;
 }
 
 .user-form__hint {
@@ -183,6 +388,35 @@
 
 .user-form__error {
   color: var(--app-color-danger-text);
+}
+
+@media (min-width: 700px) {
+  .user-form__section:first-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .user-form__section-heading,
+  .user-form__section:first-child .app-input:first-of-type {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .own-profile-card,
+  .admin-user-profile-form__section,
+  .user-form__section {
+    padding: 14px;
+  }
+
+  .own-profile-actions,
+  .admin-user-profile-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .own-profile-actions .app-button,
+  .admin-user-profile-form__actions .app-button {
+    width: 100%;
+  }
 }
 
 .user-detail-page__header {
@@ -217,13 +451,10 @@
 }
 
 .user-detail-page__remove-role {
-  margin-inline-start: 4px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
+  --padding-start: 4px;
+  --padding-end: 4px;
+  margin-inline-start: 2px;
+  height: 1.5rem;
 }
 
 .user-detail-page__add-role {
