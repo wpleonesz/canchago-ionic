@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Prompt } from 'react-router-dom';
 import AppErrorState from '../../../components/feedback/AppErrorState';
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
-import { AppClientError, BusinessRuleError } from '../../../services/api/errorMapper';
+import { AppClientError, BusinessRuleError, NetworkError, TimeoutError } from '../../../services/api/errorMapper';
 import { useSessionStore } from '../../../store/sessionStore';
 import type { UpdateOwnUserProfileRequest } from '../../../types/api/users';
 import type { OwnProfileFormValues } from '../../../validation/user-profile';
+import UserPreferencesSection from '../../preferences/components/UserPreferencesSection';
+import OutboxStatusBanner from '../components/OutboxStatusBanner';
 import OwnProfileForm from '../components/OwnProfileForm';
 import ProfilePhotoEditor from '../components/ProfilePhotoEditor';
+import { useOwnProfileOutbox } from '../hooks/useOwnProfileOutbox';
 import {
   useOwnAvatar,
   useOwnProfile,
@@ -25,6 +29,7 @@ const OwnProfilePage: React.FC = () => {
   const updateProfile = useUpdateOwnProfile();
   const updateAvatar = useUpdateOwnAvatar();
   const removeAvatar = useRemoveOwnAvatar();
+  const outbox = useOwnProfileOutbox();
   const avatarQuery = useOwnAvatar(Boolean(profileQuery.data?.hasAvatar), profileQuery.data?.avatarUpdatedAt);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -66,11 +71,24 @@ const OwnProfilePage: React.FC = () => {
       websiteUrl: EMPTY_TO_NULL(values.websiteUrl),
       expectedProfileUpdatedAt: profileQuery.data.profileUpdatedAt,
     };
+    const canQueueOffline = Capacitor.isNativePlatform();
+
+    if (canQueueOffline && !outbox.isOnline) {
+      await outbox.enqueue(body);
+      setMessage('Sin conexión: tu cambio se guardó y se sincronizará automáticamente.');
+      return true;
+    }
+
     try {
       await updateProfile.mutateAsync(body);
       setMessage('Tu perfil se actualizó correctamente.');
       return true;
     } catch (caught) {
+      if (canQueueOffline && (caught instanceof NetworkError || caught instanceof TimeoutError)) {
+        await outbox.enqueue(body);
+        setMessage('No hay conexión estable: tu cambio quedó pendiente y se sincronizará automáticamente.');
+        return true;
+      }
       setError(
         caught instanceof BusinessRuleError
           ? 'Tu perfil cambió en otra sesión. Recarga los datos.'
@@ -100,6 +118,15 @@ const OwnProfilePage: React.FC = () => {
         <h1 id="own-profile-title">Mi perfil</h1>
         <p>Completa solo la información que quieras compartir. Ningún campo de esta pantalla es obligatorio.</p>
       </header>
+      <OutboxStatusBanner
+        intent={outbox.intent}
+        isOnline={outbox.isOnline}
+        isSyncing={outbox.isSyncing}
+        justSynced={outbox.justSynced}
+        onRetryNow={outbox.retryNow}
+        onKeepMineAfterConflict={outbox.keepMineAfterConflict}
+        onDiscardPending={outbox.discardPending}
+      />
       <ProfilePhotoEditor
         name={user.name}
         avatarUrl={avatarUrl}
@@ -123,7 +150,9 @@ const OwnProfilePage: React.FC = () => {
         successMessage={message}
         onSubmit={submit}
         onDirtyChange={setDirty}
+        readOnly={outbox.intent?.status === 'conflict'}
       />
+      <UserPreferencesSection />
       <Prompt when={dirty} message="Tienes cambios sin guardar. Si sales ahora, los perderás." />
     </section>
   );

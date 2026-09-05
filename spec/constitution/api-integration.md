@@ -170,6 +170,8 @@ El DTO textual contiene `phone`, los siete enlaces opcionales, `hasAvatar`, `ava
 
 El PUT recibe `{ imageBase64, mimeType }`, admite JPEG/PNG/WebP reales hasta 2 MiB y el servidor normaliza a WebP de máximo 1024×1024. Tamaño excesivo responde `413 PAYLOAD_TOO_LARGE`; contenido inválido o discordante, `415 UNSUPPORTED_MEDIA_TYPE`. GET usa caché privada, ETag y `nosniff`; DELETE es idempotente.
 
+**Sin idempotencia real en `PATCH /api/profile` (verificado para la feature `013-sincronizacion-offline-perfil`, 2026-09-05):** el backend no acepta ningún header/campo tipo `Idempotency-Key` — confirmado leyendo `database/users/index.ts` (`updateOwnProfile` hace `userProfile.updateMany({ where: { userId, updatedAt: expectedProfileUpdatedAt } })`, solo concurrencia optimista). Reenviar el mismo body tras un éxito previo no es idempotente en el sentido estricto: como `updatedAt` ya cambió, la segunda aplicación falla con `409 CONFLICT` en vez de no-op — es un fallo seguro (nunca duplica ni sobrescribe), pero no es idempotencia real. Cualquier cliente que necesite reintentar un `PATCH /api/profile` (offline-first, reintentos de red) debe basarse en esta concurrencia optimista para detectar reaplicaciones, no asumir un mecanismo de deduplicación del servidor. Si se necesita idempotencia real en el futuro, requiere trabajo de backend (p. ej. una tabla de claves de idempotencia) — no implementado, fuera de alcance de `canchago-ionic`.
+
 ## 7. Contrato de respuesta
 
 ```json

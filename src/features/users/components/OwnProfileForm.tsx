@@ -34,9 +34,19 @@ interface Props {
   successMessage: string | null;
   onSubmit: (values: OwnProfileFormValues) => Promise<boolean>;
   onDirtyChange: (dirty: boolean) => void;
+  // Bloquea edición mientras hay un cambio pendiente en conflicto sin resolver (feature 013) —
+  // evita que una nueva edición se cuele encima de un conflicto sin decidir.
+  readOnly?: boolean;
 }
 
-const OwnProfileForm: React.FC<Props> = ({ profile, submitError, successMessage, onSubmit, onDirtyChange }) => {
+const OwnProfileForm: React.FC<Props> = ({
+  profile,
+  submitError,
+  successMessage,
+  onSubmit,
+  onDirtyChange,
+  readOnly = false,
+}) => {
   const {
     control,
     handleSubmit,
@@ -49,6 +59,7 @@ const OwnProfileForm: React.FC<Props> = ({ profile, submitError, successMessage,
   });
   useEffect(() => reset(defaults(profile)), [profile, reset]);
   useEffect(() => onDirtyChange(isDirty), [isDirty, onDirtyChange]);
+  const fieldsDisabled = isSubmitting || readOnly;
 
   const submit = async (values: OwnProfileFormValues): Promise<void> => {
     if (await onSubmit(values)) reset(values);
@@ -72,7 +83,7 @@ const OwnProfileForm: React.FC<Props> = ({ profile, submitError, successMessage,
               autocomplete="tel"
               maxlength={16}
               value={field.value}
-              disabled={isSubmitting}
+              disabled={fieldsDisabled}
               error={fieldState.error?.message}
               onIonInput={event => field.onChange(event.detail.value ?? '')}
               onIonBlur={field.onBlur}
@@ -97,7 +108,7 @@ const OwnProfileForm: React.FC<Props> = ({ profile, submitError, successMessage,
                 inputmode="url"
                 maxlength={500}
                 value={field.value}
-                disabled={isSubmitting}
+                disabled={fieldsDisabled}
                 error={fieldState.error?.message}
                 onIonInput={event => field.onChange(event.detail.value ?? '')}
                 onIonBlur={field.onBlur}
@@ -122,12 +133,12 @@ const OwnProfileForm: React.FC<Props> = ({ profile, submitError, successMessage,
         <AppButton
           type="button"
           fill="outline"
-          disabled={!isDirty || isSubmitting}
+          disabled={!isDirty || fieldsDisabled}
           onClick={() => reset(defaults(profile))}
         >
           Cancelar
         </AppButton>
-        <AppButton type="submit" isLoading={isSubmitting} disabled={!isDirty || !isValid || isSubmitting}>
+        <AppButton type="submit" isLoading={isSubmitting} disabled={!isDirty || !isValid || fieldsDisabled}>
           Guardar cambios
         </AppButton>
       </div>
