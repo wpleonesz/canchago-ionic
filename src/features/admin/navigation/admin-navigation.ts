@@ -1,4 +1,11 @@
-import { businessOutline, keyOutline, peopleOutline, shieldCheckmarkOutline } from 'ionicons/icons';
+import {
+  businessOutline,
+  calendarOutline,
+  footballOutline,
+  keyOutline,
+  peopleOutline,
+  shieldCheckmarkOutline,
+} from 'ionicons/icons';
 
 export interface AdminNavigationItem {
   id: string;
@@ -16,6 +23,36 @@ export interface AdminNavigationGroup {
 }
 
 export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
+  {
+    id: 'booking',
+    label: 'Agendamiento',
+    items: [
+      {
+        id: 'courts',
+        label: 'Canchas',
+        description: 'Consulta horarios y reserva una cancha.',
+        icon: footballOutline,
+        path: '/admin/courts',
+        requiredPermissions: ['resources.read'],
+      },
+      {
+        id: 'my-bookings',
+        label: 'Mis reservas',
+        description: 'Consulta y cancela tus agendamientos.',
+        icon: calendarOutline,
+        path: '/admin/bookings',
+        requiredPermissions: ['bookings.read.own'],
+      },
+      {
+        id: 'availability',
+        label: 'Disponibilidad',
+        description: 'Publica horarios de tus canchas.',
+        icon: calendarOutline,
+        path: '/admin/availability',
+        requiredPermissions: ['availability.manage'],
+      },
+    ],
+  },
   {
     id: 'users-access',
     label: 'Usuarios y acceso',

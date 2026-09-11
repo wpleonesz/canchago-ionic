@@ -36,9 +36,9 @@ describe('createUserFormSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects a missing organizationId', () => {
+  it('accepts a missing organizationId for global users such as Futbolista', () => {
     const result = createUserFormSchema.safeParse({ ...validUser, organizationId: '' });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 

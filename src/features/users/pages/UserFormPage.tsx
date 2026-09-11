@@ -24,7 +24,7 @@ const CreateUserForm: React.FC = () => {
         email: values.email,
         firstName: values.firstName,
         lastName: values.lastName,
-        organizationId: values.organizationId,
+        organizationId: values.organizationId || undefined,
         roleIds: values.roleIds,
       });
       history.push(`/admin/users/${user.id}`);
@@ -51,9 +51,7 @@ const EditUserForm: React.FC<{ userId: string }> = ({ userId }) => {
   }
 
   if (isError || !user) {
-    return (
-      <AppErrorState message="No se pudo cargar este usuario." onRetry={() => void refetch()} />
-    );
+    return <AppErrorState message="No se pudo cargar este usuario." onRetry={() => void refetch()} />;
   }
 
   const handleSubmit = async (values: UserFormValues): Promise<void> => {
@@ -63,7 +61,7 @@ const EditUserForm: React.FC<{ userId: string }> = ({ userId }) => {
         email: values.email,
         firstName: values.firstName,
         lastName: values.lastName,
-        organizationId: values.organizationId,
+        organizationId: values.organizationId || undefined,
         roleIds: values.roleIds,
       });
       history.push(`/admin/users/${userId}`);

@@ -201,6 +201,16 @@ El backend **no** devuelve `X-Request-ID`, `X-Correlation-ID` ni `traceparent` e
 
 ## 10. Registro de cambios
 
+### Agendamiento de canchas (backend NNN, 2026-09-11)
+
+- `GET /api/resources` y `GET /api/resources/{resourceId}` exponen únicamente canchas activas de sedes y organizaciones activas.
+- `POST /api/organizaciones/{organizationId}/sedes/{sedeId}/resources` crea una cancha dentro del alcance del Gestor.
+- `GET/POST /api/resources/{resourceId}/availability` consulta y crea franjas; `includeAll=true` es administrativo. `PATCH /api/resources/{resourceId}/availability/{slotId}` publica, edita o retira con `expectedUpdatedAt`.
+- `GET/POST /api/bookings` lista reservas propias y confirma usando el usuario de sesión. El POST recibe `{ availabilitySlotId, idempotencyKey }`; una franja solo admite una reserva confirmada.
+- `DELETE /api/bookings/{bookingId}` cancela únicamente una reserva propia futura y libera la franja, conservando el histórico.
+- Permisos: `resources.read`, `resources.manage`, `availability.read`, `availability.manage`, `bookings.create`, `bookings.read.own`, `bookings.cancel.own`.
+- No existe límite diario, semanal ni total por Futbolista: puede reservar de lunes a domingo tantas franjas distintas y disponibles como considere.
+
 _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aquí escrito, añadir una entrada fechada aquí antes de implementar._
 
 ### Gestión de organizaciones y sedes — administración (feature 010, 2026-08-29)

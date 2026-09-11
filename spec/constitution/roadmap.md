@@ -28,8 +28,9 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 _Sin comprometer ni ordenar del todo. Depende de que el backend exponga o corrija lo necesario (ver `api-integration.md`)._
 
+- **Agendamiento de canchas (en cierre)** — Implementados catálogo de canchas, disponibilidad por fecha, confirmación idempotente, reservas propias/cancelación y gestión de cancha/franjas para Gestor. Navegación protegida por permisos y estados de carga/vacío/error/éxito. Lint, typecheck y build pasan; la suite global alcanza 193 pruebas antes de que el worker Vitest agote memoria, deuda del runner pendiente de aislar.
+
 - **Hardening de backend para organizaciones/sedes** — Depende de que `canchago` implemente una feature análoga a `018` para: scope guard contra IDOR de sede (ver `api-integration.md` §10, feature `010`), concurrencia optimista, `_count` de sedes, unicidad real de `Organization.name` y auditoría. Fuera de este repositorio.
-- **Motor de reservas (cliente)** — Sin fecha: depende de que `canchago` modele canchas/recursos y reservas, que hoy no existen.
 - **011 · Estandarización de UI/UX con componentes Ionic React** — En curso. Fase 0 (fundaciones compartidas: `AppDataList`/`AppEmptyState`/`AppErrorState` migrados a `IonToolbar`/`IonCard`) y parte de las Fases 1-3 completadas (`AppStateMessage`/`AppDetailActions` nuevos, aplicados en el shell administrativo y en los 3 `*DetailPage` de users/roles/organizations; `AccountTypeStep` migrado a `IonCard button`; único `<button>` HTML crudo real encontrado en `features/` reemplazado por `AppButton`+`IonIcon`). `yarn lint && yarn typecheck && yarn test && yarn build` limpios (1 fallo preexistente ajeno en `UserForm.test.tsx`). Fases 4-7 (aplicar el mismo criterio al resto de `*ListPage`/`*FormPage`, `AppPageHeader` compartido, `ProfileSummary`, `access-requests`) quedan pendientes. Ver `spec/features/011-estandarizacion-ui-ionic-react/`.
 
 > Cada feature nueva se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.

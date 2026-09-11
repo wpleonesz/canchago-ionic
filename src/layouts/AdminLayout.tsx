@@ -21,6 +21,9 @@ import OwnProfilePage from '../features/users/pages/OwnProfilePage';
 import PermissionsListPage from '../features/roles/pages/PermissionsListPage';
 import RolesModule from '../features/roles/pages/RolesModule';
 import AdminRoute from '../routes/AdminRoute';
+import CourtsPage from '../features/bookings/pages/CourtsPage';
+import MyBookingsPage from '../features/bookings/pages/MyBookingsPage';
+import AvailabilityManagementPage from '../features/bookings/pages/AvailabilityManagementPage';
 import { useSessionStore } from '../store/sessionStore';
 import '../features/admin/admin-layout.css';
 
@@ -61,6 +64,15 @@ const AdminLayout: React.FC = () => {
               <Route exact path="/admin/profile">
                 <OwnProfilePage />
               </Route>
+              <AdminRoute exact path="/admin/courts" requiredPermissions={['resources.read']}>
+                <CourtsPage />
+              </AdminRoute>
+              <AdminRoute exact path="/admin/bookings" requiredPermissions={['bookings.read.own']}>
+                <MyBookingsPage />
+              </AdminRoute>
+              <AdminRoute exact path="/admin/availability" requiredPermissions={['availability.manage']}>
+                <AvailabilityManagementPage />
+              </AdminRoute>
               <Route path="/admin/users">
                 <UsersModule />
               </Route>

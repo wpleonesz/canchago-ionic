@@ -102,7 +102,7 @@ const UserForm: React.FC<UserFormProps> = ({ mode, defaultValues, onSubmit, subm
       <section className="user-form__section" aria-labelledby="user-access-title">
         <div className="user-form__section-heading">
           <h2 id="user-access-title">Organización y acceso</h2>
-          <p>Selecciona el ámbito y los roles correspondientes.</p>
+          <p>La organización solo es obligatoria para roles administrativos de una organización.</p>
         </div>
         <Controller
           name="organizationId"

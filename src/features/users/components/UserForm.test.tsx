@@ -27,10 +27,9 @@ describe('UserForm', () => {
   it('shows validation errors and never calls onSubmit when submitted empty', async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
 
-    const { container } = render(
-      <UserForm mode="create" onSubmit={onSubmit} submitLabel="Crear usuario" />,
-      { wrapper },
-    );
+    const { container } = render(<UserForm mode="create" onSubmit={onSubmit} submitLabel="Crear usuario" />, {
+      wrapper,
+    });
 
     const form = container.querySelector('form');
     expect(form).not.toBeNull();
@@ -70,7 +69,7 @@ describe('UserForm', () => {
           email: 'juan.perez@ejemplo.com',
           firstName: 'Juan',
           lastName: 'Pérez',
-          organizationId: 'org-1',
+          organizationId: '11111111-1111-4111-8111-111111111111',
         }}
         onSubmit={onSubmit}
         submitLabel="Crear usuario"

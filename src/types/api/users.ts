@@ -30,7 +30,7 @@ export interface CreateUserRequest {
   email: string;
   firstName: string;
   lastName: string;
-  organizationId: string;
+  organizationId?: string;
   roleIds?: string[];
 }
 
@@ -84,14 +84,7 @@ export interface OwnUserProfileDto {
 }
 
 export type OwnProfileField =
-  | 'phone'
-  | 'facebookUrl'
-  | 'instagramUrl'
-  | 'linkedinUrl'
-  | 'xUrl'
-  | 'githubUrl'
-  | 'tiktokUrl'
-  | 'websiteUrl';
+  'phone' | 'facebookUrl' | 'instagramUrl' | 'linkedinUrl' | 'xUrl' | 'githubUrl' | 'tiktokUrl' | 'websiteUrl';
 
 export type UpdateOwnUserProfileRequest = Partial<Record<OwnProfileField, string | null>> & {
   expectedProfileUpdatedAt: string;
