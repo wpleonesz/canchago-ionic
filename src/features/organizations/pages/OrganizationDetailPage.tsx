@@ -4,15 +4,17 @@ import { useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import AppButton from '../../../components/common/AppButton';
 import AppDataList from '../../../components/common/AppDataList';
+import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
 import AppErrorState from '../../../components/feedback/AppErrorState';
+import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
 import AppSearchInput from '../../../components/forms/AppSearchInput';
 import AppSelect from '../../../components/forms/AppSelect';
 import AppDetailActions from '../../../components/layout/AppDetailActions';
-import { NotFoundError } from '../../../services/api/errorMapper';
+import { AppClientError, NotFoundError } from '../../../services/api/errorMapper';
 import PermissionGuard from '../../auth/components/PermissionGuard';
 import VenueListItem from '../components/VenueListItem';
-import { useOrganization } from '../hooks/useOrganizations';
+import { useOrganization, useUpdateOrganization } from '../hooks/useOrganizations';
 import { useVenues } from '../hooks/useVenues';
 import { getOrganizationStatusColor, getOrganizationStatusLabel } from '../organizationStatus';
 import '../organizations.css';
@@ -25,6 +27,9 @@ const OrganizationDetailPage: React.FC = () => {
   const [venuePage, setVenuePage] = useState(1);
   const [venueSearch, setVenueSearch] = useState('');
   const [venueOrderBy, setVenueOrderBy] = useState<'name' | 'createdAt'>('createdAt');
+  const [showDeactivateConfirmation, setShowDeactivateConfirmation] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const updateStatusMutation = useUpdateOrganization(organizationId);
 
   const venuesQuery = useVenues(organizationId, {
     page: venuePage,
@@ -49,6 +54,23 @@ const OrganizationDetailPage: React.FC = () => {
   }
 
   const organization = organizationQuery.data;
+  const isActive = organization.status === 'ACTIVE';
+
+  const changeStatus = async (nextStatus: 'ACTIVE' | 'INACTIVE'): Promise<void> => {
+    setStatusError(null);
+    try {
+      await updateStatusMutation.mutateAsync({
+        status: nextStatus,
+        expectedUpdatedAt: organization.updatedAt,
+      });
+    } catch (error) {
+      setStatusError(
+        error instanceof AppClientError
+          ? error.message
+          : 'No se pudo cambiar el estado de la organización.',
+      );
+    }
+  };
 
   return (
     <section className="organization-detail-page" aria-labelledby="organization-detail-title">
@@ -65,6 +87,16 @@ const OrganizationDetailPage: React.FC = () => {
           <PermissionGuard permission="organizaciones.manage">
             <AppButton onClick={() => history.push(`/admin/organizations/${organization.id}/edit`)}>
               Editar organización
+            </AppButton>
+          </PermissionGuard>
+          <PermissionGuard permission="organizaciones.manage">
+            <AppButton
+              fill="outline"
+              color={isActive ? 'danger' : 'success'}
+              isLoading={updateStatusMutation.isPending}
+              onClick={() => (isActive ? setShowDeactivateConfirmation(true) : void changeStatus('ACTIVE'))}
+            >
+              {isActive ? 'Desactivar organización' : 'Activar organización'}
             </AppButton>
           </PermissionGuard>
         </AppDetailActions>
@@ -150,6 +182,26 @@ const OrganizationDetailPage: React.FC = () => {
           onPageChange={setVenuePage}
         />
       </section>
+
+      <AppConfirmDialog
+        isOpen={showDeactivateConfirmation}
+        header="Desactivar organización"
+        message="La organización dejará de aparecer en nuevas búsquedas y no se podrán publicar canchas u horarios nuevos en sus sedes. Las reservas ya confirmadas no se cancelan."
+        confirmText="Desactivar"
+        isDestructive
+        onConfirm={() => {
+          setShowDeactivateConfirmation(false);
+          void changeStatus('INACTIVE');
+        }}
+        onCancel={() => setShowDeactivateConfirmation(false)}
+      />
+      <AppInteractionAlert
+        isOpen={Boolean(statusError)}
+        kind="error"
+        header="No se pudo cambiar el estado"
+        message={statusError ?? ''}
+        onDismiss={() => setStatusError(null)}
+      />
     </section>
   );
 };

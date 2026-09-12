@@ -219,7 +219,7 @@ _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aq
 Contrato verificado en código real de `canchago` (`pages/api/organizaciones/**`, `services/organizaciones-sedes/`, `database/organizaciones-sedes/`, `validations/organizaciones-sedes/`, `prisma/schema.prisma`) para la nueva pantalla administrativa de CRUD de organizaciones y sedes (`spec/features/010-gestion-organizaciones-sedes/`), que reemplaza el placeholder de organizaciones descrito en la entrada de la feature `008` de abajo.
 
 - El modelo Prisma real es `Venue` (tabla `venues`), no `Sede` — "sede" es solo el término en español usado en rutas/carpetas del backend. No existe modelo `Court`/`Cancha`.
-- `POST/PATCH /organizaciones` y `POST/PATCH /organizaciones/{id}/sedes` nunca aceptan `status` en el body; el backend siempre escribe `'ACTIVE'` al crear. `Organization.status`/`Venue.status` son texto libre (`VARCHAR(30)`, sin `CHECK`/enum); los únicos valores usados hoy en todo el código son `'ACTIVE'` y `'PENDING_APPROVAL'`.
+- `POST /organizaciones` y `POST /organizaciones/{id}/sedes` nunca aceptan `status` en el body; el backend siempre escribe `'ACTIVE'` al crear. `PATCH` de ambos sí acepta `status` desde la feature `023` (ver entrada fechada más abajo). `Organization.status`/`Venue.status` son texto libre (`VARCHAR(30)`, sin `CHECK`/enum); los valores usados hoy en todo el código son `'ACTIVE'`, `'PENDING_APPROVAL'` e `'INACTIVE'`.
 - `POST /organizaciones/{organizationId}/sedes` nunca acepta `organizationId` en el body — se toma solo del path.
 - Los permisos sembrados `sedes.read`/`sedes.manage` (`prisma/seed.ts`) **no los verifica ningún endpoint real** — todo el CRUD de sedes usa `organizaciones.read`/`organizaciones.manage`. No usar `sedes.*` para gatear nada en el frontend.
 - **Gaps de backend verificados, sin cerrar hoy** (detalle completo y justificación en `spec/features/010-gestion-organizaciones-sedes/spec.md`, sección "Dependencia de backend"):
@@ -231,6 +231,17 @@ Contrato verificado en código real de `canchago` (`pages/api/organizaciones/**`
   6. Sin auditoría: `AuditAction` solo cubre `ROLE_CREATED`/`ROLE_UPDATED`.
   7. Sin `_count` de sedes por organización en el listado — por eso la pantalla no muestra "número de sedes" (evita N+1).
 - Mientras estos puntos no se resuelvan en `canchago` (posible feature de hardening futura, análoga a `018`, fuera de este repositorio), la pantalla de organizaciones/sedes **no se considera protegida contra acceso cruzado entre organizaciones a nivel de servidor** — mismo criterio que ya aplica la nota de escalamiento de privilegios de la feature `005` en §4: la UI oculta por conveniencia, no por garantía del servidor.
+
+### Estado de organizaciones y sedes (feature 023 backend / 015 frontend, 2026-09-11)
+
+Contrato verificado en código real de `canchago` (`validations/organizaciones-sedes/`, `services/organizaciones-sedes/organizacion.service.ts` y `sede.service.ts`) tras agregar la capacidad de desactivar/reactivar una organización o sede ya aprobada.
+
+- `PATCH /organizaciones/{organizationId}` y `PATCH /organizaciones/{organizationId}/sedes/{sedeId}` aceptan ahora `status?: 'ACTIVE' | 'INACTIVE'`, junto al resto de campos editables y `expectedUpdatedAt` (obligatorio, igual que antes).
+- **Exclusivo de Administrador global**: si `status` viene en el body y quien llama no es Administrador, el backend responde `403 FORBIDDEN` con el mensaje `'Solo un administrador puede cambiar el estado de la organización/sede.'`, **sin** aplicar ningún cambio — incluso si el actor tiene `organizaciones.manage` y alcance real sobre esa organización/sede (el mismo scope que sí le permite editar nombre/contacto). `PermissionGuard permission="organizaciones.manage"` en Ionic es solo UX: la decisión real es este 403 del backend.
+- `status` nunca acepta `'PENDING_APPROVAL'` por este endpoint (Zod lo rechaza con 400): ese valor solo lo controla el flujo de aprobación/rechazo de solicitudes de acceso (feature `016` backend / entrada de arriba), que no cambió.
+- Organización y sede se desactivan de forma **independiente**: no hay cascada automática de `status` entre una y sus sedes.
+- Desactivar **no bloquea ni cancela** reservas futuras confirmadas ni franjas publicadas existentes — decisión explícita de negocio. Solo oculta la organización/sede (y, transitivamente, sus canchas) de `GET /api/resources` para nuevas búsquedas/publicaciones, porque ese listado ya exige organización, sede y recurso `ACTIVE` a la vez (comportamiento preexistente, sin cambios).
+- El cambio queda auditado igual que el resto de campos (`ORGANIZATION_UPDATED` / `VENUE_UPDATED`).
 
 ### Gestión administrativa de roles (backend 018, 2026-08-29)
 

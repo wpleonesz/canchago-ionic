@@ -53,6 +53,9 @@ export interface CreateOrganizationRequest {
 
 export interface UpdateOrganizationRequest extends Partial<CreateOrganizationRequest> {
   expectedUpdatedAt: string;
+  // Exclusivo de Administrador global (canchago feature 023): el backend responde 403 a
+  // cualquier otro actor que lo envíe, aunque tenga organizaciones.manage y alcance real.
+  status?: 'ACTIVE' | 'INACTIVE';
 }
 
 // Modelo real: Venue (tabla venues) — "sede" es solo el término en español usado en las rutas
@@ -98,4 +101,6 @@ export interface CreateVenueRequest {
 
 export interface UpdateVenueRequest extends Partial<CreateVenueRequest> {
   expectedUpdatedAt: string;
+  // Mismo criterio que UpdateOrganizationRequest.status (canchago feature 023).
+  status?: 'ACTIVE' | 'INACTIVE';
 }
