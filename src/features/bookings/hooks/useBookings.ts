@@ -7,9 +7,11 @@ import {
   createSlot,
   getAvailability,
   getOwnBookings,
+  getManagedBookings,
   getResources,
   updateSlot,
   updateScheduleDay,
+  updateResource,
 } from '../../../services/api/endpoints/reservas';
 import type {
   AvailabilityQuery,
@@ -19,16 +21,21 @@ import type {
   CreateSlotRequest,
   UpdateSlotRequest,
   UpdateScheduleDayRequest,
+  UpdateResourceRequest,
 } from '../../../types/api/reservas';
 import { isResourceId } from '../../../validation/resource-id';
 
 export const bookingKeys = {
   all: ['bookings'] as const,
-  resources: (page: number) => ['resources', page] as const,
+  resources: (page: number, includeInactive = false) => ['resources', page, includeInactive] as const,
   availability: (id: string, query: AvailabilityQuery) => ['availability', id, query] as const,
+  managed: (id: string, page: number) => ['bookings', 'managed', id, page] as const,
 };
-export const useResources = (page = 1) =>
-  useQuery({ queryKey: bookingKeys.resources(page), queryFn: () => getResources(page) });
+export const useResources = (page = 1, includeInactive = false) =>
+  useQuery({
+    queryKey: bookingKeys.resources(page, includeInactive),
+    queryFn: () => getResources(page, 20, includeInactive),
+  });
 export const useAvailability = (resourceId: string, query: AvailabilityQuery) =>
   useQuery({
     queryKey: bookingKeys.availability(resourceId, query),
@@ -38,6 +45,12 @@ export const useAvailability = (resourceId: string, query: AvailabilityQuery) =>
   });
 export const useOwnBookings = (page = 1) =>
   useQuery({ queryKey: [...bookingKeys.all, page], queryFn: () => getOwnBookings(page) });
+export const useManagedBookings = (resourceId: string, page = 1) =>
+  useQuery({
+    queryKey: bookingKeys.managed(resourceId, page),
+    queryFn: () => getManagedBookings(resourceId, page),
+    enabled: isResourceId(resourceId),
+  });
 export const useCreateBooking = () => {
   const client = useQueryClient();
   return useMutation({
@@ -87,11 +100,17 @@ export const useCreateResource = (organizationId: string, venueId: string) => {
     onSuccess: async () => client.invalidateQueries({ queryKey: ['resources'] }),
   });
 };
+export const useUpdateResource = (resourceId: string) => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateResourceRequest) => updateResource(resourceId, body),
+    onSuccess: async () => client.invalidateQueries({ queryKey: ['resources'] }),
+  });
+};
 export const useUpdateSlot = (resourceId: string) => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ slotId, body }: { slotId: string; body: UpdateSlotRequest }) =>
-      updateSlot(resourceId, slotId, body),
+    mutationFn: ({ slotId, body }: { slotId: string; body: UpdateSlotRequest }) => updateSlot(resourceId, slotId, body),
     onSuccess: async () => client.invalidateQueries({ queryKey: ['availability', resourceId] }),
   });
 };

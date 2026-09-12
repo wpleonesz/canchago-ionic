@@ -51,6 +51,14 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
         path: '/admin/availability',
         requiredPermissions: ['availability.manage'],
       },
+      {
+        id: 'managed-bookings',
+        label: 'Reservas recibidas',
+        description: 'Consulta quién reservó tus canchas.',
+        icon: peopleOutline,
+        path: '/admin/managed-bookings',
+        requiredPermissions: ['bookings.read.manage'],
+      },
     ],
   },
   {

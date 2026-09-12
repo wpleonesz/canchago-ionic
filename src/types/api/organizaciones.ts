@@ -26,6 +26,8 @@ export interface OrganizationListQuery {
   search?: string;
   orderBy?: 'name' | 'createdAt';
   order?: 'asc' | 'desc';
+  status?: string;
+  hasActiveVenues?: 'true' | 'false';
 }
 
 // Envelope real no estándar de GET /api/organizaciones: {organizations, meta}, no {data, meta}
@@ -73,6 +75,7 @@ export interface VenueListQuery {
   search?: string;
   orderBy?: 'name' | 'createdAt';
   order?: 'asc' | 'desc';
+  status?: string;
 }
 
 // Envelope real no estándar de GET /api/organizaciones/{id}/sedes: {venues, meta}.

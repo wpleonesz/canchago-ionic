@@ -4,6 +4,12 @@ export interface ResourceDto {
   id: string;
   name: string;
   description: string | null;
+  address: string;
+  latitude: string | null;
+  longitude: string | null;
+  hourlyPrice: string;
+  currency: 'USD';
+  updatedAt: string;
   status: 'ACTIVE' | 'INACTIVE';
   venue: { id: string; name: string; organization: { id: string; name: string } };
 }
@@ -24,6 +30,10 @@ export interface BookingDto {
   status: 'CONFIRMED' | 'CANCELLED';
   cancelledAt: string | null;
   createdAt: string;
+  hourlyPrice: string;
+  durationMinutes: number;
+  totalPrice: string;
+  currency: 'USD';
   resource?: ResourceDto;
   availabilitySlot?: AvailabilitySlotDto;
 }
@@ -58,6 +68,26 @@ export interface UpdateScheduleDayRequest {
 export interface CreateResourceRequest {
   name: string;
   description?: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
+  hourlyPrice: number;
+}
+export interface UpdateResourceRequest extends Partial<CreateResourceRequest> {
+  status?: 'ACTIVE' | 'INACTIVE';
+  expectedUpdatedAt: string;
+}
+export interface ManagedBookingDto {
+  id: string;
+  status: 'CONFIRMED' | 'CANCELLED';
+  hourlyPrice: string;
+  durationMinutes: number;
+  totalPrice: string;
+  currency: 'USD';
+  createdAt: string;
+  cancelledAt: string | null;
+  availabilitySlot: Pick<AvailabilitySlotDto, 'startsAt' | 'endsAt'>;
+  user: { id: string; email: string; profile: { firstName: string; lastName: string } | null };
 }
 export interface UpdateSlotRequest {
   startsAt?: string;

@@ -9,6 +9,7 @@ import AppSelect from '../../../components/forms/AppSelect';
 import { BusinessRuleError } from '../../../services/api/errorMapper';
 import { normalizeResourceId } from '../../../validation/resource-id';
 import { useAvailability, useCreateBooking, useResources } from '../hooks/useBookings';
+import { directionsUrl, formatUsd } from '../utils/maps';
 
 const localDate = (): string => {
   const now = new Date();
@@ -26,6 +27,7 @@ const CourtsPage: React.FC = () => {
   const selectedResource = resources.data?.data.find(resource => resource.id === resourceId);
   const range = useMemo(() => ({ from: new Date(`${date}T00:00:00`).toISOString(), to: new Date(`${date}T23:59:59`).toISOString() }), [date]);
   const availability = useAvailability(resourceId, range);
+  const selectedSlotData = availability.data?.data.find(slot => slot.id === selectedSlot);
   const booking = useCreateBooking();
 
   const confirm = async (): Promise<void> => {
@@ -64,6 +66,11 @@ const CourtsPage: React.FC = () => {
         <IonCardContent><AppSelect label="Cancha" value={resourceId} placeholder="Selecciona una cancha" options={(resources.data?.data ?? []).map(resource => ({ value: resource.id, label: `${resource.name} · ${resource.venue.name}` }))} onIonChange={event => { setResourceId(normalizeResourceId(event.detail.value)); setSelectedSlot(''); }} /></IonCardContent>
       </IonCard>
 
+      {selectedResource && <IonCard className="booking-summary"><IonCardContent>
+        <IonText><strong>{formatUsd(selectedResource.hourlyPrice)} por hora</strong><br />{selectedResource.address}</IonText>
+        <AppButton fill="clear" size="small" href={directionsUrl(selectedResource)} target="_blank" rel="noreferrer">Cómo llegar</AppButton>
+      </IonCardContent></IonCard>}
+
       {resourceId && <IonCard className="booking-step">
         <IonCardHeader><IonCardSubtitle>Paso 2 de 3</IonCardSubtitle><IonCardTitle>¿Qué día?</IonCardTitle></IonCardHeader>
         <IonCardContent><IonInput className="app-input" fill="outline" label="Fecha" labelPlacement="stacked" type="date" min={today} value={date} onIonInput={event => { setDate(String(event.detail.value ?? today)); setSelectedSlot(''); }} /></IonCardContent>
@@ -74,7 +81,7 @@ const CourtsPage: React.FC = () => {
         <IonCardContent>{slotsContent()}</IonCardContent>
       </IonCard>}
 
-      {selectedSlot && <IonCard className="booking-summary"><IonCardContent><IonText><strong>{selectedResource?.name}</strong><br />{new Date(`${date}T12:00:00`).toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</IonText></IonCardContent></IonCard>}
+      {selectedSlotData && selectedResource && <IonCard className="booking-summary"><IonCardContent><IonText><strong>Total: {formatUsd(Number(selectedResource.hourlyPrice) * ((new Date(selectedSlotData.endsAt).getTime() - new Date(selectedSlotData.startsAt).getTime()) / 3_600_000))}</strong><br />{new Date(`${date}T12:00:00`).toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</IonText></IonCardContent></IonCard>}
       <AppButton expand="block" disabled={!selectedSlot} isLoading={booking.isPending} onClick={() => void confirm()}>Confirmar reserva</AppButton>
       <AppInteractionAlert isOpen={Boolean(message)} kind={message?.startsWith('Reserva confirmada') ? 'success' : 'error'} message={message ?? ''} onDismiss={() => setMessage(null)} />
     </section>

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { IonItem, IonLabel } from '@ionic/react';
+import { IonButtons, IonItem, IonLabel } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
 import AppDataList from '../../../components/common/AppDataList';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import { useCancelBooking, useOwnBookings } from '../hooks/useBookings';
+import { directionsUrl, formatUsd } from '../utils/maps';
 
 const MyBookingsPage: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -30,12 +31,17 @@ const MyBookingsPage: React.FC = () => {
               <h2>{item.resource?.name ?? 'Cancha'}</h2>
               <p>{item.availabilitySlot ? new Date(item.availabilitySlot.startsAt).toLocaleString('es-EC') : ''}</p>
               <p>{item.status === 'CONFIRMED' ? 'Confirmada' : 'Cancelada'}</p>
+              <p><strong>{formatUsd(item.totalPrice)}</strong> · {item.durationMinutes} min</p>
+              {item.resource?.address && <p>{item.resource.address}</p>}
             </IonLabel>
-            {item.status === 'CONFIRMED' && (
-              <AppButton slot="end" fill="outline" color="danger" onClick={() => void onCancel(item.id)}>
+            <IonButtons slot="end">
+              {item.resource && <AppButton fill="clear" href={directionsUrl(item.resource)} target="_blank" rel="noreferrer">Cómo llegar</AppButton>}
+              {item.status === 'CONFIRMED' && (
+              <AppButton fill="outline" color="danger" onClick={() => void onCancel(item.id)}>
                 Cancelar
               </AppButton>
-            )}
+              )}
+            </IonButtons>
           </IonItem>
         )}
         isLoading={query.isLoading}
