@@ -50,6 +50,11 @@
   gap: 12px;
 }
 
+.weekday-discount-editor__row {
+  display: grid;
+  gap: 4px;
+}
+
 .booking-day-picker {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));

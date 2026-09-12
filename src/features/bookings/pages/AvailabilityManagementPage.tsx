@@ -58,7 +58,7 @@ const AvailabilityManagementPage: React.FC = () => {
   const [resourceLongitude, setResourceLongitude] = useState('');
   const [resourceStatus, setResourceStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
   const [schedulePage, setSchedulePage] = useState(1);
   const organizations = useOrganizations({ page: 1, pageSize: 100, status: 'ACTIVE', hasActiveVenues: 'true' });
   const venues = useVenues(organizationId, { page: 1, pageSize: 100, status: 'ACTIVE' });
@@ -111,9 +111,12 @@ const AvailabilityManagementPage: React.FC = () => {
   const saveMonth = async (): Promise<void> => {
     try {
       const created = await scheduleMutation.mutateAsync({ slots: concreteSlots, publish });
-      setMessage(`${created} horarios guardados para el mes.`);
+      setFeedback({ kind: 'success', text: `${created} horarios guardados para el mes.` });
     } catch {
-      setMessage('No se guardó el mes. Revisa que los horarios no se crucen con otros existentes.');
+      setFeedback({
+        kind: 'error',
+        text: 'No se guardó el mes. Revisa que los horarios no se crucen con otros existentes.',
+      });
     }
   };
 
@@ -128,9 +131,9 @@ const AvailabilityManagementPage: React.FC = () => {
       });
       setResourceId(resource.id);
       setResourceName('');
-      setMessage('Cancha creada. Ya puedes programar su mes.');
+      setFeedback({ kind: 'success', text: 'Cancha creada. Ya puedes programar su mes.' });
     } catch {
-      setMessage('No se pudo crear la cancha. Revisa la organización y la sede.');
+      setFeedback({ kind: 'error', text: 'No se pudo crear la cancha. Revisa la organización y la sede.' });
     }
   };
 
@@ -145,9 +148,9 @@ const AvailabilityManagementPage: React.FC = () => {
         status: resourceStatus,
         expectedUpdatedAt: selectedResource.updatedAt,
       });
-      setMessage('Datos y estado de la cancha actualizados.');
+      setFeedback({ kind: 'success', text: 'Datos y estado de la cancha actualizados.' });
     } catch {
-      setMessage('No se pudo actualizar la cancha. Recarga e intenta nuevamente.');
+      setFeedback({ kind: 'error', text: 'No se pudo actualizar la cancha. Recarga e intenta nuevamente.' });
     }
   };
 
@@ -160,9 +163,15 @@ const AvailabilityManagementPage: React.FC = () => {
         status,
         slots: daySlots.map(slot => ({ id: slot.id, expectedUpdatedAt: slot.updatedAt })),
       });
-      setMessage(status === 'WITHDRAWN' ? 'Jornada cerrada.' : 'Jornada abierta nuevamente.');
+      setFeedback({
+        kind: 'success',
+        text: status === 'WITHDRAWN' ? 'Jornada cerrada.' : 'Jornada abierta nuevamente.',
+      });
     } catch {
-      setMessage('No se pudo cambiar el horario. Si está reservado, debe mantenerse abierto.');
+      setFeedback({
+        kind: 'error',
+        text: 'No se pudo cambiar el horario. Si está reservado, debe mantenerse abierto.',
+      });
     }
   };
 
@@ -528,17 +537,10 @@ const AvailabilityManagementPage: React.FC = () => {
         </section>
       )}
       <AppInteractionAlert
-        isOpen={Boolean(message)}
-        kind={
-          message?.includes('guardados') ||
-          message?.includes('creada') ||
-          message?.includes('abierto') ||
-          message?.includes('cerrado')
-            ? 'success'
-            : 'error'
-        }
-        message={message ?? ''}
-        onDismiss={() => setMessage(null)}
+        isOpen={Boolean(feedback)}
+        kind={feedback?.kind ?? 'error'}
+        message={feedback?.text ?? ''}
+        onDismiss={() => setFeedback(null)}
       />
       <LocationPickerModal
         isOpen={showLocationPicker}

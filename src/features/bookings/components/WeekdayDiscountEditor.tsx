@@ -1,4 +1,4 @@
-import { IonInput, IonItem, IonLabel, IonNote } from '@ionic/react';
+import { IonInput, IonNote } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import AppButton from '../../../components/common/AppButton';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
@@ -62,9 +62,12 @@ const WeekdayDiscountEditor: React.FC<WeekdayDiscountEditorProps> = ({ resourceI
         const value = inputs[day.value] ?? '';
         const invalid = !isValidPercent(value);
         return (
-          <IonItem key={day.value} lines="none" className="weekday-discount-editor__row">
-            <IonLabel>{day.short}</IonLabel>
+          <div key={day.value} className="weekday-discount-editor__row">
             <IonInput
+              className="app-input"
+              fill="outline"
+              label={day.short}
+              labelPlacement="start"
               aria-label={`Descuento del ${day.short}`}
               type="number"
               min="0"
@@ -76,14 +79,13 @@ const WeekdayDiscountEditor: React.FC<WeekdayDiscountEditorProps> = ({ resourceI
                 const next = String(event.detail.value ?? '');
                 setInputs(current => ({ ...current, [day.value]: next }));
               }}
-            />
-            <IonLabel slot="end">%</IonLabel>
+            >
+              <div slot="end">%</div>
+            </IonInput>
             {invalid && (
-              <IonNote slot="end" color="danger">
-                (0-100]
-              </IonNote>
+              <IonNote color="danger">El descuento del {day.short} debe estar entre 0 y 100.</IonNote>
             )}
-          </IonItem>
+          </div>
         );
       })}
       <AppButton disabled={hasInvalidValue} isLoading={mutation.isPending} onClick={() => void save()}>
