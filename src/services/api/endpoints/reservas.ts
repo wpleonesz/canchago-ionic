@@ -4,23 +4,44 @@ import type {
   AvailabilitySlotDto,
   BookingDto,
   CreateBookingRequest,
+  CreateMonthlyScheduleRequest,
   CreateResourceRequest,
   CreateSlotRequest,
   Paginated,
   ResourceDto,
   UpdateSlotRequest,
+  UpdateScheduleDayRequest,
 } from '../../../types/api/reservas';
+import { isResourceId } from '../../../validation/resource-id';
 
 export const getResources = async (page = 1, pageSize = 20): Promise<Paginated<ResourceDto>> =>
   (await apiClient.get<Paginated<ResourceDto>>('/resources', { params: { page, pageSize } })).data;
 export const getAvailability = async (
   resourceId: string,
   query: AvailabilityQuery,
-): Promise<Paginated<AvailabilitySlotDto>> =>
-  (await apiClient.get<Paginated<AvailabilitySlotDto>>(`/resources/${resourceId}/availability`, { params: query }))
+): Promise<Paginated<AvailabilitySlotDto>> => {
+  if (!isResourceId(resourceId)) throw new Error('No se puede consultar disponibilidad sin una cancha válida.');
+  return (await apiClient.get<Paginated<AvailabilitySlotDto>>(`/resources/${resourceId}/availability`, { params: query }))
     .data;
+};
 export const createSlot = async (resourceId: string, body: CreateSlotRequest): Promise<AvailabilitySlotDto> =>
   (await apiClient.post<{ data: AvailabilitySlotDto }>(`/resources/${resourceId}/availability`, body)).data.data;
+export const createMonthlySchedule = async (
+  resourceId: string,
+  body: CreateMonthlyScheduleRequest,
+): Promise<number> =>
+  (
+    await apiClient.post<{ data: { created: number } }>(
+      `/resources/${resourceId}/availability/batch`,
+      body,
+    )
+  ).data.data.created;
+export const updateScheduleDay = async (
+  resourceId: string,
+  body: UpdateScheduleDayRequest,
+): Promise<number> =>
+  (await apiClient.patch<{ data: { updated: number } }>(`/resources/${resourceId}/availability/batch`, body))
+    .data.data.updated;
 export const createResource = async (
   organizationId: string,
   venueId: string,

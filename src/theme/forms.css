@@ -15,6 +15,41 @@
 .app-input,
 .app-select {
   min-height: 58px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.app-select::part(container) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-select::part(text),
+.app-select::part(placeholder) {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-content ion-select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-content ion-select::part(container) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-content ion-select::part(text),
+.admin-content ion-select::part(placeholder) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-textarea {

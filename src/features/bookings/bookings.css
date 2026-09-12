@@ -1,0 +1,140 @@
+.booking-page {
+  width: min(100%, 680px);
+  min-width: 0;
+  margin-inline: auto;
+  padding-bottom: 24px;
+}
+
+.booking-page *,
+.booking-step,
+.booking-step ion-card-content,
+.booking-secondary,
+.booking-secondary ion-item,
+.booking-secondary ion-accordion {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.booking-page__intro {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.booking-page__intro h1,
+.booking-existing h2 {
+  margin: 0 0 6px;
+  color: var(--app-color-text);
+}
+
+.booking-page__intro p,
+.booking-existing ion-text > p {
+  margin: 0;
+  color: var(--app-color-text-muted);
+  line-height: 1.5;
+}
+
+.booking-step {
+  margin: 0 0 12px;
+  border: 1px solid var(--app-color-border);
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.booking-step ion-card-subtitle {
+  color: var(--app-color-brand-strong);
+  font-size: 0.72rem;
+}
+
+.booking-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.booking-day-picker {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.booking-day-picker ion-chip {
+  justify-content: center;
+  min-width: 0;
+  min-height: 42px;
+  margin: 0;
+  padding-inline: 4px;
+}
+
+.booking-time-block {
+  --background: var(--app-color-surface-muted);
+  --border-radius: 12px;
+  --padding-start: 10px;
+  --inner-padding-end: 4px;
+}
+
+.booking-time-block ion-input {
+  flex: 1 1 92px;
+  min-width: 76px;
+}
+
+.booking-summary {
+  margin: 16px 0 10px;
+  border-radius: 14px;
+  box-shadow: none;
+  background: var(--app-color-brand-soft);
+}
+
+.booking-summary ion-card-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.booking-summary ion-icon {
+  flex: 0 0 auto;
+  font-size: 24px;
+}
+
+.booking-secondary {
+  margin-top: 18px;
+  border: 1px solid var(--app-color-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.booking-accordion-content {
+  padding: 14px;
+}
+
+.booking-existing {
+  margin-top: 28px;
+}
+
+.booking-slot-row ion-label {
+  overflow: hidden;
+}
+
+.booking-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.booking-slot-grid .app-button {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 420px) {
+  .booking-day-picker {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .booking-time-block {
+    flex-wrap: wrap;
+  }
+
+  .booking-slot-row {
+    --inner-padding-end: 4px;
+  }
+}

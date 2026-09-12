@@ -2,20 +2,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   cancelOwnBooking,
   createBooking,
+  createMonthlySchedule,
   createResource,
   createSlot,
   getAvailability,
   getOwnBookings,
   getResources,
   updateSlot,
+  updateScheduleDay,
 } from '../../../services/api/endpoints/reservas';
 import type {
   AvailabilityQuery,
   CreateBookingRequest,
+  CreateMonthlyScheduleRequest,
   CreateResourceRequest,
   CreateSlotRequest,
   UpdateSlotRequest,
+  UpdateScheduleDayRequest,
 } from '../../../types/api/reservas';
+import { isResourceId } from '../../../validation/resource-id';
 
 export const bookingKeys = {
   all: ['bookings'] as const,
@@ -28,7 +33,7 @@ export const useAvailability = (resourceId: string, query: AvailabilityQuery) =>
   useQuery({
     queryKey: bookingKeys.availability(resourceId, query),
     queryFn: () => getAvailability(resourceId, query),
-    enabled: Boolean(resourceId && query.from && query.to),
+    enabled: isResourceId(resourceId) && Boolean(query.from && query.to),
     refetchOnWindowFocus: true,
   });
 export const useOwnBookings = (page = 1) =>
@@ -58,6 +63,20 @@ export const useCreateSlot = (resourceId: string) => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateSlotRequest) => createSlot(resourceId, body),
+    onSuccess: async () => client.invalidateQueries({ queryKey: ['availability', resourceId] }),
+  });
+};
+export const useCreateMonthlySchedule = (resourceId: string) => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateMonthlyScheduleRequest) => createMonthlySchedule(resourceId, body),
+    onSuccess: async () => client.invalidateQueries({ queryKey: ['availability', resourceId] }),
+  });
+};
+export const useUpdateScheduleDay = (resourceId: string) => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateScheduleDayRequest) => updateScheduleDay(resourceId, body),
     onSuccess: async () => client.invalidateQueries({ queryKey: ['availability', resourceId] }),
   });
 };

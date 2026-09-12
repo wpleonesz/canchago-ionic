@@ -47,6 +47,14 @@ export interface CreateSlotRequest {
   endsAt: string;
   publish?: boolean;
 }
+export interface CreateMonthlyScheduleRequest {
+  slots: Array<{ startsAt: string; endsAt: string }>;
+  publish?: boolean;
+}
+export interface UpdateScheduleDayRequest {
+  slots: Array<{ id: string; expectedUpdatedAt: string }>;
+  status: 'PUBLISHED' | 'WITHDRAWN';
+}
 export interface CreateResourceRequest {
   name: string;
   description?: string;

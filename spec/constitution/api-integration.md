@@ -206,6 +206,7 @@ El backend **no** devuelve `X-Request-ID`, `X-Correlation-ID` ni `traceparent` e
 - `GET /api/resources` y `GET /api/resources/{resourceId}` exponen únicamente canchas activas de sedes y organizaciones activas.
 - `POST /api/organizaciones/{organizationId}/sedes/{sedeId}/resources` crea una cancha dentro del alcance del Gestor.
 - `GET/POST /api/resources/{resourceId}/availability` consulta y crea franjas; `includeAll=true` es administrativo. `PATCH /api/resources/{resourceId}/availability/{slotId}` publica, edita o retira con `expectedUpdatedAt`.
+- `POST /api/resources/{resourceId}/availability/batch` recibe hasta 500 franjas UTC y guarda la programación mensual de forma atómica; un solapamiento revierte el lote completo. `PATCH` sobre la misma ruta abre o cierra conjuntamente las franjas de una jornada, respetando reservas y versiones.
 - `GET/POST /api/bookings` lista reservas propias y confirma usando el usuario de sesión. El POST recibe `{ availabilitySlotId, idempotencyKey }`; una franja solo admite una reserva confirmada.
 - `DELETE /api/bookings/{bookingId}` cancela únicamente una reserva propia futura y libera la franja, conservando el histórico.
 - Permisos: `resources.read`, `resources.manage`, `availability.read`, `availability.manage`, `bookings.create`, `bookings.read.own`, `bookings.cancel.own`.

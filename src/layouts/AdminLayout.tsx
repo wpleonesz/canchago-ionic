@@ -26,6 +26,7 @@ import MyBookingsPage from '../features/bookings/pages/MyBookingsPage';
 import AvailabilityManagementPage from '../features/bookings/pages/AvailabilityManagementPage';
 import { useSessionStore } from '../store/sessionStore';
 import '../features/admin/admin-layout.css';
+import '../features/bookings/bookings.css';
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
