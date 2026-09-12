@@ -48,4 +48,13 @@ describe('admin capabilities', () => {
     expect(new Set(items.map(item => item.id)).size).toBe(items.length);
     expect(new Set(items.map(item => item.path)).size).toBe(items.length);
   });
+
+  it('shows the AI assistant from the existing booking permissions', () => {
+    const playerNavigation = filterAdminNavigation(
+      ADMIN_NAVIGATION,
+      permissions('resources.read', 'availability.read', 'bookings.read.own'),
+    );
+
+    expect(playerNavigation.flatMap(group => group.items).some(item => item.id === 'ai-assistant')).toBe(true);
+  });
 });

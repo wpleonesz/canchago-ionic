@@ -33,6 +33,9 @@
 	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Feature 016: ubicación de la cancha en el mapa (@capacitor/geolocation) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Canchago usa tu ubicación solo para ayudarte a marcar la posición exacta de la cancha en el mapa.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

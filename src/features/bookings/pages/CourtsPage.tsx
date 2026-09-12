@@ -7,6 +7,7 @@ import AppInteractionAlert from '../../../components/feedback/AppInteractionAler
 import AppSkeleton from '../../../components/feedback/AppSkeleton';
 import AppSelect from '../../../components/forms/AppSelect';
 import { BusinessRuleError } from '../../../services/api/errorMapper';
+import { useLocation } from 'react-router-dom';
 import { normalizeResourceId } from '../../../validation/resource-id';
 import { useAvailability, useCreateBooking, useResources } from '../hooks/useBookings';
 import { directionsUrl, formatUsd } from '../utils/maps';
@@ -18,9 +19,11 @@ const localDate = (): string => {
 
 const CourtsPage: React.FC = () => {
   const today = localDate();
-  const [resourceId, setResourceId] = useState('');
-  const [date, setDate] = useState(today);
-  const [selectedSlot, setSelectedSlot] = useState('');
+  const location = useLocation();
+  const initial = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const [resourceId, setResourceId] = useState(() => normalizeResourceId(initial.get('resourceId')));
+  const [date, setDate] = useState(() => initial.get('date') ?? today);
+  const [selectedSlot, setSelectedSlot] = useState(() => normalizeResourceId(initial.get('slotId')));
   const [message, setMessage] = useState<string | null>(null);
   const attemptKey = useRef(crypto.randomUUID());
   const resources = useResources();
@@ -81,7 +84,27 @@ const CourtsPage: React.FC = () => {
         <IonCardContent>{slotsContent()}</IonCardContent>
       </IonCard>}
 
-      {selectedSlotData && selectedResource && <IonCard className="booking-summary"><IonCardContent><IonText><strong>Total: {formatUsd(Number(selectedResource.hourlyPrice) * ((new Date(selectedSlotData.endsAt).getTime() - new Date(selectedSlotData.startsAt).getTime()) / 3_600_000))}</strong><br />{new Date(`${date}T12:00:00`).toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}</IonText></IonCardContent></IonCard>}
+      {selectedSlotData && selectedResource && (() => {
+        const hasDiscount = Number(selectedSlotData.effectiveHourlyPrice) < Number(selectedResource.hourlyPrice);
+        const durationHours = (new Date(selectedSlotData.endsAt).getTime() - new Date(selectedSlotData.startsAt).getTime()) / 3_600_000;
+        const total = Number(selectedSlotData.effectiveHourlyPrice) * durationHours;
+        return (
+          <IonCard className="booking-summary">
+            <IonCardContent>
+              <IonText>
+                {hasDiscount && (
+                  <p className="booking-summary__discounted-price">
+                    <s>{formatUsd(selectedResource.hourlyPrice)} por hora</s> {formatUsd(selectedSlotData.effectiveHourlyPrice)} por hora · Descuento aplicado
+                  </p>
+                )}
+                <strong>Total: {formatUsd(total)}</strong>
+                <br />
+                {new Date(`${date}T12:00:00`).toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </IonText>
+            </IonCardContent>
+          </IonCard>
+        );
+      })()}
       <AppButton expand="block" disabled={!selectedSlot} isLoading={booking.isPending} onClick={() => void confirm()}>Confirmar reserva</AppButton>
       <AppInteractionAlert isOpen={Boolean(message)} kind={message?.startsWith('Reserva confirmada') ? 'success' : 'error'} message={message ?? ''} onDismiss={() => setMessage(null)} />
     </section>

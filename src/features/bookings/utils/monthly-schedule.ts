@@ -1,3 +1,15 @@
+// 0=domingo … 6=sábado, mismo criterio que Date.getDay()/getUTCDay() y que ya usa el backend
+// (canchago feature 024) para los descuentos por día de la semana.
+export const WEEKDAYS = [
+  { value: 1, short: 'Lun' },
+  { value: 2, short: 'Mar' },
+  { value: 3, short: 'Mié' },
+  { value: 4, short: 'Jue' },
+  { value: 5, short: 'Vie' },
+  { value: 6, short: 'Sáb' },
+  { value: 0, short: 'Dom' },
+];
+
 export interface TimeBlock {
   id: string;
   startsAt: string;

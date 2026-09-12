@@ -1,6 +1,14 @@
 import type { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
-import { AuthenticationError, mapApiError, NetworkError, TimeoutError, ValidationError } from './errorMapper';
+import {
+  AiServiceError,
+  AuthenticationError,
+  mapApiError,
+  NetworkError,
+  TimeoutError,
+  TooManyRequestsError,
+  ValidationError,
+} from './errorMapper';
 import type { ApiErrorBody } from '../../types/api/common';
 
 const buildAxiosError = (overrides: Partial<AxiosError<ApiErrorBody>>): AxiosError<ApiErrorBody> =>
@@ -55,5 +63,23 @@ describe('mapApiError', () => {
     const error = buildAxiosError({ code: 'ECONNABORTED', response: undefined });
 
     expect(mapApiError(error)).toBeInstanceOf(TimeoutError);
+  });
+
+  it('maps AI provider and rate-limit errors without exposing transport details', () => {
+    const aiError = buildAxiosError({
+      response: {
+        status: 503,
+        data: { error: { code: 'AI_PROVIDER_UNAVAILABLE', message: 'Asistente no disponible' } },
+      } as AxiosError<ApiErrorBody>['response'],
+    });
+    const rateError = buildAxiosError({
+      response: {
+        status: 429,
+        data: { error: { code: 'TOO_MANY_REQUESTS', message: 'Intenta más tarde' } },
+      } as AxiosError<ApiErrorBody>['response'],
+    });
+
+    expect(mapApiError(aiError)).toBeInstanceOf(AiServiceError);
+    expect(mapApiError(rateError)).toBeInstanceOf(TooManyRequestsError);
   });
 });

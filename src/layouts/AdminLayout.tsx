@@ -25,6 +25,7 @@ import CourtsPage from '../features/bookings/pages/CourtsPage';
 import MyBookingsPage from '../features/bookings/pages/MyBookingsPage';
 import AvailabilityManagementPage from '../features/bookings/pages/AvailabilityManagementPage';
 import ManagedBookingsPage from '../features/bookings/pages/ManagedBookingsPage';
+import AiAssistantPage from '../features/ai/pages/AiAssistantPage';
 import { useSessionStore } from '../store/sessionStore';
 import '../features/admin/admin-layout.css';
 import '../features/bookings/bookings.css';
@@ -71,6 +72,9 @@ const AdminLayout: React.FC = () => {
               </AdminRoute>
               <AdminRoute exact path="/admin/bookings" requiredPermissions={['bookings.read.own']}>
                 <MyBookingsPage />
+              </AdminRoute>
+              <AdminRoute exact path="/admin/ai-assistant" requiredPermissions={['resources.read', 'availability.read', 'bookings.read.own']}>
+                <AiAssistantPage />
               </AdminRoute>
               <AdminRoute exact path="/admin/availability" requiredPermissions={['availability.manage']}>
                 <AvailabilityManagementPage />

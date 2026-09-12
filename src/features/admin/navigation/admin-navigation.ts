@@ -2,6 +2,7 @@ import {
   businessOutline,
   calendarOutline,
   footballOutline,
+  sparklesOutline,
   keyOutline,
   peopleOutline,
   shieldCheckmarkOutline,
@@ -34,6 +35,14 @@ export const ADMIN_NAVIGATION: AdminNavigationGroup[] = [
         icon: footballOutline,
         path: '/admin/courts',
         requiredPermissions: ['resources.read'],
+      },
+      {
+        id: 'ai-assistant',
+        label: 'Asistente IA',
+        description: 'Recibe ayuda sobre horarios y reservas.',
+        icon: sparklesOutline,
+        path: '/admin/ai-assistant',
+        requiredPermissions: ['resources.read', 'availability.read', 'bookings.read.own'],
       },
       {
         id: 'my-bookings',

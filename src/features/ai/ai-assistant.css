@@ -1,0 +1,26 @@
+.ai-assistant {
+  display: grid;
+  gap: 1rem;
+}
+
+.ai-form,
+.ai-result {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.ai-result {
+  border-left: 3px solid var(--ion-color-primary);
+  padding-inline-start: 1rem;
+}
+
+.ai-result__label {
+  color: var(--ion-color-primary);
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.ai-form__error {
+  color: var(--ion-color-danger);
+  margin: 0;
+}

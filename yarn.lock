@@ -1232,6 +1232,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@capacitor/geolocation@npm:^8.2.2":
+  version: 8.2.2
+  resolution: "@capacitor/geolocation@npm:8.2.2"
+  dependencies:
+    "@capacitor/synapse": ^1.0.4
+  peerDependencies:
+    "@capacitor/core": ">=8.0.0"
+  checksum: 6fb4443edaf0ea6215319fb434776577eb6ac45bc6b27b54393c2ee8d572775ac54e95a8858d32a7e07f9d3248cc63f5d4f8bbf28097ee46ad1304d9670918d5
+  languageName: node
+  linkType: hard
+
 "@capacitor/haptics@npm:8.0.2":
   version: 8.0.2
   resolution: "@capacitor/haptics@npm:8.0.2"
@@ -1283,6 +1294,13 @@ __metadata:
   peerDependencies:
     "@capacitor/core": ">=8.0.0"
   checksum: 48e04c7808549a002941047518bc3c3af8b1056f446ce931492f6fa9245f8404bab77e7367991e5af234388a60cf89185c2f7bcd13a47ca53b87eabde2da719c
+  languageName: node
+  linkType: hard
+
+"@capacitor/synapse@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@capacitor/synapse@npm:1.0.4"
+  checksum: 9d18020508eba8d68f6687abd02c82217dfe36ccd31633b3cf9f00febeffdae9067734c1d3183e5bcd76a3939130fe0d7dae45030bcb8de6bbad30bc2608d17a
   languageName: node
   linkType: hard
 
@@ -2616,6 +2634,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/geojson@npm:*":
+  version: 7946.0.16
+  resolution: "@types/geojson@npm:7946.0.16"
+  checksum: d66e5e023f43b3e7121448117af1930af7d06410a32a585a8bc9c6bb5d97e0d656cd93d99e31fa432976c32e98d4b780f82bf1fd1acd20ccf952eb6b8e39edf2
+  languageName: node
+  linkType: hard
+
 "@types/history@npm:^4.7.11":
   version: 4.7.11
   resolution: "@types/history@npm:4.7.11"
@@ -2662,6 +2687,15 @@ __metadata:
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 97ed0cb44d4070aecea772b7b2e2ed971e10c81ec87dd4ecc160322ffa55ff330dace1793489540e3e318d90942064bb697cc0f8989391797792d919737b3b98
+  languageName: node
+  linkType: hard
+
+"@types/leaflet@npm:^1.9.22":
+  version: 1.9.22
+  resolution: "@types/leaflet@npm:1.9.22"
+  dependencies:
+    "@types/geojson": "*"
+  checksum: fb3b54f7c8ea2e3ca84d41c6ad06e418ec87a15c30c820f33e60cf91eadb3950392a794c870e5a01daa66dccda05a0d97067ba303299b1e479f579329e652d6a
   languageName: node
   linkType: hard
 
@@ -3609,6 +3643,7 @@ __metadata:
     "@capacitor/app": 8.1.1
     "@capacitor/cli": 8.5.0
     "@capacitor/core": 8.5.0
+    "@capacitor/geolocation": ^8.2.2
     "@capacitor/haptics": 8.0.2
     "@capacitor/ios": 8.5.0
     "@capacitor/keyboard": 8.0.5
@@ -3623,6 +3658,7 @@ __metadata:
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^16.2.0
     "@testing-library/user-event": ^14.4.3
+    "@types/leaflet": ^1.9.22
     "@types/react": 19.0.10
     "@types/react-dom": 19.0.4
     "@types/react-router": ^5.1.20
@@ -3638,6 +3674,7 @@ __metadata:
     globals: ^15.15.0
     ionicons: ^7.4.0
     jsdom: ^22.1.0
+    leaflet: ^1.9.4
     msw: 2.15.0
     prettier: 3.9.6
     react: 19.0.0
@@ -6066,6 +6103,13 @@ __metadata:
   version: 1.6.0
   resolution: "lazy-ass@npm:1.6.0"
   checksum: 5a3ebb17915b03452320804466345382a6c25ac782ec4874fecdb2385793896cd459be2f187dc7def8899180c32ee0ab9a1aa7fe52193ac3ff3fe29bb0591729
+  languageName: node
+  linkType: hard
+
+"leaflet@npm:^1.9.4":
+  version: 1.9.4
+  resolution: "leaflet@npm:1.9.4"
+  checksum: bfc79f17a247b37b92d84b3c78702501603392d6589fde606de4a825d11f1609d90225388834f2e0709dac327e52dcd4b4b9cc9fd3d590060c5b1e53b84fa6c6
   languageName: node
   linkType: hard
 

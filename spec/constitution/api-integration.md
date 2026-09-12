@@ -214,6 +214,15 @@ El backend **no** devuelve `X-Request-ID`, `X-Correlation-ID` ni `traceparent` e
 
 _Cada vez que una feature nueva descubra o requiera un contrato distinto a lo aquí escrito, añadir una entrada fechada aquí antes de implementar._
 
+### Asistente IA (backend 024, 2026-09-12)
+
+- `POST /api/ai/slot-recommendations` exige sesión, `resources.read` y `availability.read`. Recibe `{ from, to, preferredTimeOfDay?, maxHourlyPrice? }`; el rango futuro no supera siete días y el body es estricto.
+- La respuesta es `{ data: { generated, explanation, recommendations } }`. Cada recomendación contiene IDs reales de recurso/franja, datos objetivos y una razón generada. Un resultado sin candidatos usa `generated: false` y lista vacía.
+- `POST /api/ai/upcoming-bookings-summary` exige `bookings.read.own`, recibe `{ horizonDays }` entre 1 y 30 y toma el usuario exclusivamente de la sesión. Responde `{ data: { generated, summary, bookingsCount } }`.
+- Ninguna operación acepta `prompt` o `userId`, modifica datos o reserva. `POST /api/bookings` continúa siendo el único flujo de confirmación y revalida disponibilidad.
+- Errores adicionales: `429 TOO_MANY_REQUESTS`, `502 AI_INVALID_RESPONSE`, `503 AI_PROVIDER_UNAVAILABLE|AI_MODEL_UNAVAILABLE` y `504 AI_PROVIDER_TIMEOUT`.
+- Ionic nunca recibe configuración de LM Studio y nunca se conecta directamente al proveedor.
+
 ### Gestión de organizaciones y sedes — administración (feature 010, 2026-08-29)
 
 Contrato verificado en código real de `canchago` (`pages/api/organizaciones/**`, `services/organizaciones-sedes/`, `database/organizaciones-sedes/`, `validations/organizaciones-sedes/`, `prisma/schema.prisma`) para la nueva pantalla administrativa de CRUD de organizaciones y sedes (`spec/features/010-gestion-organizaciones-sedes/`), que reemplaza el placeholder de organizaciones descrito en la entrada de la feature `008` de abajo.
@@ -242,6 +251,16 @@ Contrato verificado en código real de `canchago` (`validations/organizaciones-s
 - Organización y sede se desactivan de forma **independiente**: no hay cascada automática de `status` entre una y sus sedes.
 - Desactivar **no bloquea ni cancela** reservas futuras confirmadas ni franjas publicadas existentes — decisión explícita de negocio. Solo oculta la organización/sede (y, transitivamente, sus canchas) de `GET /api/resources` para nuevas búsquedas/publicaciones, porque ese listado ya exige organización, sede y recurso `ACTIVE` a la vez (comportamiento preexistente, sin cambios).
 - El cambio queda auditado igual que el resto de campos (`ORGANIZATION_UPDATED` / `VENUE_UPDATED`).
+
+### Descuentos de precio por día de la semana (feature 025 backend / 017 frontend, 2026-09-12)
+
+Contrato verificado en código real de `canchago` (`validations/reservas/index.ts`, `database/reservas/index.ts`, `services/reservas/index.ts`, `pages/api/resources/[resourceId]/weekday-discounts/index.ts`).
+
+- `PUT /resources/{resourceId}/weekday-discounts` — permiso `resources.manage`, mismo alcance (Administrador o Gestor con `actorCanManageResource`) que `PATCH /resources/{resourceId}`. Body `{ discounts: Array<{ weekday: number (0-6, 0=domingo); discountPercent: number (0,100] }> }`, máximo 7 entradas, sin días repetidos (400 si se repiten). Reemplaza el conjunto completo: enviar `discounts: []` quita todos los descuentos existentes. Responde `{ data: Array<{ weekday, discountPercent: string }> }`.
+- `GET /resources` y `GET /resources/{resourceId}` incluyen ahora `weekdayDiscounts: Array<{ weekday, discountPercent: string }>` en cada recurso (`discountPercent` viaja como string, mismo criterio que `hourlyPrice`).
+- `GET /resources/{resourceId}/availability` incluye `effectiveHourlyPrice: string` en cada franja — el precio por hora ya con el descuento del día real de esa franja aplicado (derivado del día UTC de `startsAt`, no del huso horario local), o el precio base si ese día no tiene descuento. Se calcula siempre en el backend (`applyWeekdayDiscount`); el cliente nunca lo recalcula.
+- `POST /bookings` congela ese mismo precio ya descontado en `Booking.hourlyPrice`/`totalPrice` al confirmar. Cambiar o quitar un descuento después no afecta reservas ya confirmadas.
+- El descuento es una propiedad permanente de la cancha (no expira, no está atado a un mes ni a un rango de fechas); se administra independientemente de la programación mensual de horarios.
 
 ### Gestión administrativa de roles (backend 018, 2026-08-29)
 

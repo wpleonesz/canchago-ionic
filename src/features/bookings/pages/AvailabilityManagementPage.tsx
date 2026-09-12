@@ -17,14 +17,16 @@ import {
   IonText,
   IonToggle,
 } from '@ionic/react';
-import { addOutline, calendarOutline, closeOutline, timeOutline } from 'ionicons/icons';
+import { addOutline, calendarOutline, closeOutline, mapOutline, timeOutline } from 'ionicons/icons';
 import AppButton from '../../../components/common/AppButton';
 import AppDataList from '../../../components/common/AppDataList';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import AppSelect from '../../../components/forms/AppSelect';
+import LocationPickerModal from '../../../components/maps/LocationPickerModal';
 import { normalizeResourceId } from '../../../validation/resource-id';
 import { useOrganizations } from '../../organizations/hooks/useOrganizations';
 import { useVenues } from '../../organizations/hooks/useVenues';
+import WeekdayDiscountEditor from '../components/WeekdayDiscountEditor';
 import {
   useAvailability,
   useCreateMonthlySchedule,
@@ -33,17 +35,7 @@ import {
   useUpdateResource,
   useUpdateScheduleDay,
 } from '../hooks/useBookings';
-import { blocksOverlap, buildMonthlySlots, type TimeBlock } from '../utils/monthly-schedule';
-
-const WEEKDAYS = [
-  { value: 1, short: 'Lun' },
-  { value: 2, short: 'Mar' },
-  { value: 3, short: 'Mié' },
-  { value: 4, short: 'Jue' },
-  { value: 5, short: 'Vie' },
-  { value: 6, short: 'Sáb' },
-  { value: 0, short: 'Dom' },
-];
+import { blocksOverlap, buildMonthlySlots, WEEKDAYS, type TimeBlock } from '../utils/monthly-schedule';
 
 const currentMonth = (): string => {
   const now = new Date();
@@ -65,6 +57,7 @@ const AvailabilityManagementPage: React.FC = () => {
   const [resourceLatitude, setResourceLatitude] = useState('');
   const [resourceLongitude, setResourceLongitude] = useState('');
   const [resourceStatus, setResourceStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [schedulePage, setSchedulePage] = useState(1);
   const organizations = useOrganizations({ page: 1, pageSize: 100, status: 'ACTIVE', hasActiveVenues: 'true' });
@@ -103,6 +96,12 @@ const AvailabilityManagementPage: React.FC = () => {
     setResourceLongitude(selectedResource.longitude ?? '');
     setResourceStatus(selectedResource.status);
   }, [selectedResource]);
+
+  const applyPickedLocation = (coordinates: { latitude: number; longitude: number }): void => {
+    setResourceLatitude(String(coordinates.latitude));
+    setResourceLongitude(String(coordinates.longitude));
+    setShowLocationPicker(false);
+  };
 
   const toggleDay = (day: number): void =>
     setWeekdays(current => (current.includes(day) ? current.filter(item => item !== day) : [...current, day]));
@@ -351,6 +350,10 @@ const AvailabilityManagementPage: React.FC = () => {
                 value={resourceLongitude}
                 onIonInput={event => setResourceLongitude(String(event.detail.value ?? ''))}
               />
+              <AppButton fill="outline" onClick={() => setShowLocationPicker(true)}>
+                <IonIcon icon={mapOutline} slot="start" />
+                Elegir en el mapa
+              </AppButton>
               <AppSelect
                 label="Estado de la cancha"
                 value={resourceStatus}
@@ -370,6 +373,10 @@ const AvailabilityManagementPage: React.FC = () => {
               >
                 Guardar datos de la cancha
               </AppButton>
+              <IonText>
+                <h3>Descuentos por día de la semana</h3>
+              </IonText>
+              <WeekdayDiscountEditor resourceId={selectedResource.id} discounts={selectedResource.weekdayDiscounts} />
             </div>
           </IonAccordion>
         </IonAccordionGroup>
@@ -446,6 +453,10 @@ const AvailabilityManagementPage: React.FC = () => {
               value={resourceLongitude}
               onIonInput={event => setResourceLongitude(String(event.detail.value ?? ''))}
             />
+            <AppButton fill="outline" onClick={() => setShowLocationPicker(true)}>
+              <IonIcon icon={mapOutline} slot="start" />
+              Elegir en el mapa
+            </AppButton>
             <AppButton
               disabled={
                 !venueId ||
@@ -528,6 +539,13 @@ const AvailabilityManagementPage: React.FC = () => {
         }
         message={message ?? ''}
         onDismiss={() => setMessage(null)}
+      />
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        initialLatitude={resourceLatitude ? Number(resourceLatitude) : undefined}
+        initialLongitude={resourceLongitude ? Number(resourceLongitude) : undefined}
+        onConfirm={applyPickedLocation}
+        onCancel={() => setShowLocationPicker(false)}
       />
     </section>
   );

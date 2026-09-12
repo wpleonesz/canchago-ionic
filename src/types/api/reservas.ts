@@ -1,5 +1,11 @@
 import type { PaginationMeta } from './common';
 
+// discountPercent viaja como string: el backend serializa todo Decimal como texto, mismo
+// criterio que hourlyPrice (canchago feature 024).
+export interface WeekdayDiscountDto {
+  weekday: number;
+  discountPercent: string;
+}
 export interface ResourceDto {
   id: string;
   name: string;
@@ -11,6 +17,7 @@ export interface ResourceDto {
   currency: 'USD';
   updatedAt: string;
   status: 'ACTIVE' | 'INACTIVE';
+  weekdayDiscounts: WeekdayDiscountDto[];
   venue: { id: string; name: string; organization: { id: string; name: string } };
 }
 export interface AvailabilitySlotDto {
@@ -21,6 +28,9 @@ export interface AvailabilitySlotDto {
   status: 'DRAFT' | 'PUBLISHED' | 'WITHDRAWN';
   updatedAt: string;
   isBooked?: boolean;
+  // Precio por hora ya con el descuento del día real de la franja aplicado (o el precio base si
+  // ese día no tiene descuento) — siempre calculado por el backend, nunca en el cliente.
+  effectiveHourlyPrice: string;
 }
 export interface BookingDto {
   id: string;
@@ -76,6 +86,9 @@ export interface CreateResourceRequest {
 export interface UpdateResourceRequest extends Partial<CreateResourceRequest> {
   status?: 'ACTIVE' | 'INACTIVE';
   expectedUpdatedAt: string;
+}
+export interface UpdateWeekdayDiscountsRequest {
+  discounts: Array<{ weekday: number; discountPercent: number }>;
 }
 export interface ManagedBookingDto {
   id: string;

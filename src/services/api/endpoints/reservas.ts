@@ -13,6 +13,8 @@ import type {
   UpdateSlotRequest,
   UpdateScheduleDayRequest,
   UpdateResourceRequest,
+  UpdateWeekdayDiscountsRequest,
+  WeekdayDiscountDto,
 } from '../../../types/api/reservas';
 import { isResourceId } from '../../../validation/resource-id';
 
@@ -48,6 +50,11 @@ export const createResource = async (
     .data.data;
 export const updateResource = async (resourceId: string, body: UpdateResourceRequest): Promise<ResourceDto> =>
   (await apiClient.patch<{ data: ResourceDto }>(`/resources/${resourceId}`, body)).data.data;
+export const updateWeekdayDiscounts = async (
+  resourceId: string,
+  body: UpdateWeekdayDiscountsRequest,
+): Promise<WeekdayDiscountDto[]> =>
+  (await apiClient.put<{ data: WeekdayDiscountDto[] }>(`/resources/${resourceId}/weekday-discounts`, body)).data.data;
 export const getManagedBookings = async (
   resourceId: string,
   page = 1,

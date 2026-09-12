@@ -12,6 +12,7 @@ import {
   updateSlot,
   updateScheduleDay,
   updateResource,
+  updateWeekdayDiscounts,
 } from '../../../services/api/endpoints/reservas';
 import type {
   AvailabilityQuery,
@@ -22,6 +23,7 @@ import type {
   UpdateSlotRequest,
   UpdateScheduleDayRequest,
   UpdateResourceRequest,
+  UpdateWeekdayDiscountsRequest,
 } from '../../../types/api/reservas';
 import { isResourceId } from '../../../validation/resource-id';
 
@@ -104,6 +106,13 @@ export const useUpdateResource = (resourceId: string) => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (body: UpdateResourceRequest) => updateResource(resourceId, body),
+    onSuccess: async () => client.invalidateQueries({ queryKey: ['resources'] }),
+  });
+};
+export const useUpdateWeekdayDiscounts = (resourceId: string) => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateWeekdayDiscountsRequest) => updateWeekdayDiscounts(resourceId, body),
     onSuccess: async () => client.invalidateQueries({ queryKey: ['resources'] }),
   });
 };

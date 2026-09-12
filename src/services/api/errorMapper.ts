@@ -49,6 +49,14 @@ export class TimeoutError extends AppClientError {
   readonly code = 'TIMEOUT_ERROR';
 }
 
+export class AiServiceError extends AppClientError {
+  readonly code = 'AI_SERVICE_ERROR';
+}
+
+export class TooManyRequestsError extends AppClientError {
+  readonly code = 'TOO_MANY_REQUESTS';
+}
+
 export class UnknownError extends AppClientError {
   readonly code = 'UNKNOWN_ERROR';
 }
@@ -81,6 +89,13 @@ const buildFromBackendCode = (
     case 'INTERNAL_ERROR':
     case 'METHOD_NOT_ALLOWED':
       return new ServerError(message, httpStatus, details);
+    case 'TOO_MANY_REQUESTS':
+      return new TooManyRequestsError(message, httpStatus, details);
+    case 'AI_PROVIDER_UNAVAILABLE':
+    case 'AI_MODEL_UNAVAILABLE':
+    case 'AI_PROVIDER_TIMEOUT':
+    case 'AI_INVALID_RESPONSE':
+      return new AiServiceError(message, httpStatus, details);
     default:
       return new UnknownError(message, httpStatus, details);
   }
