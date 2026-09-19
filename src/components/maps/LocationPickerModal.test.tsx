@@ -48,7 +48,6 @@ const mocks = vi.hoisted(() => {
     tileLayerFn: vi.fn(() => tileLayerInstance),
     markerFn: vi.fn(() => markerInstance),
     divIconFn: vi.fn(() => ({})),
-    requestPermissions: vi.fn(),
     getCurrentPosition: vi.fn(),
   };
 });
@@ -64,7 +63,6 @@ vi.mock('leaflet', () => ({
 
 vi.mock('@capacitor/geolocation', () => ({
   Geolocation: {
-    requestPermissions: mocks.requestPermissions,
     getCurrentPosition: mocks.getCurrentPosition,
   },
 }));
@@ -111,7 +109,7 @@ describe('LocationPickerModal', () => {
   });
 
   it('permiso de ubicación denegado muestra un mensaje y no bloquea el marcado manual', async () => {
-    mocks.requestPermissions.mockResolvedValue({ location: 'denied', coarseLocation: 'denied' });
+    mocks.getCurrentPosition.mockRejectedValue({ code: 'OS-PLUG-GLOC-0003' });
     const onConfirm = vi.fn();
     render(<LocationPickerModal isOpen onConfirm={onConfirm} onCancel={vi.fn()} />);
 
@@ -119,14 +117,24 @@ describe('LocationPickerModal', () => {
       (await screen.findByText('Usar mi ubicación')).click();
     });
 
-    expect(
-      await screen.findByText('No se concedió permiso de ubicación. Puedes marcar el punto manualmente en el mapa.'),
-    ).toBeInTheDocument();
-    expect(mocks.getCurrentPosition).not.toHaveBeenCalled();
+    expect(await screen.findByRole('alert')).toHaveTextContent('no tiene permiso de ubicación');
+    expect(mocks.getCurrentPosition).toHaveBeenCalledTimes(1);
+    clickMap(-0.2, -78.4);
+    await waitFor(() => expect(screen.getByText('Confirmar ubicación')).not.toBeDisabled());
+  });
+
+  it('GPS del dispositivo desactivado indica cómo resolverlo', async () => {
+    mocks.getCurrentPosition.mockRejectedValue({ code: 'OS-PLUG-GLOC-0007' });
+    render(<LocationPickerModal isOpen onConfirm={vi.fn()} onCancel={vi.fn()} />);
+
+    await act(async () => {
+      (await screen.findByText('Usar mi ubicación')).click();
+    });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('GPS');
   });
 
   it('detectar ubicación exitosamente coloca el marcador y habilita confirmar', async () => {
-    mocks.requestPermissions.mockResolvedValue({ location: 'granted', coarseLocation: 'granted' });
     mocks.getCurrentPosition.mockResolvedValue({ coords: { latitude: -0.15, longitude: -78.48 } });
     const onConfirm = vi.fn();
     render(<LocationPickerModal isOpen onConfirm={onConfirm} onCancel={vi.fn()} />);

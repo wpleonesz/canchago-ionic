@@ -16,7 +16,8 @@
 .app-select {
   min-height: 58px;
   max-width: 100%;
-  overflow: hidden;
+  /* El label stacked de los campos outline se dibuja sobre el borde superior: overflow hidden lo recorta. */
+  overflow: visible;
 }
 
 .app-select::part(container) {
@@ -37,7 +38,7 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .admin-content ion-select::part(container) {
