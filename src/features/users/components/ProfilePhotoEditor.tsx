@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { IonActionSheet } from '@ionic/react';
+import { cameraOutline, folderOpenOutline, imagesOutline } from 'ionicons/icons';
 import AppAvatar from '../../../components/common/AppAvatar';
 import AppButton from '../../../components/common/AppButton';
 import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
+import { NativePhotoError, pickPhoto, type PhotoSource } from '../../../services/native/camera';
 import type { UpdateOwnAvatarRequest } from '../../../types/api/users';
 
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -34,6 +38,7 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRemoveConfirmationOpen, setIsRemoveConfirmationOpen] = useState(false);
+  const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
   useEffect(
     () => () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -61,6 +66,21 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
     }
   };
 
+  const choose = async (source: PhotoSource): Promise<void> => {
+    setError(null);
+    try {
+      await select((await pickPhoto(source)) ?? undefined);
+    } catch (photoError) {
+      setError(photoError instanceof NativePhotoError ? photoError.message : 'No se pudo obtener la fotografía.');
+    }
+  };
+
+  // En navegador (solo desarrollo) no hay cámara nativa: se abre directamente el selector de archivos.
+  const openSources = (): void => {
+    if (Capacitor.isNativePlatform()) setIsSourceSheetOpen(true);
+    else inputRef.current?.click();
+  };
+
   return (
     <section className="own-profile-card profile-photo" aria-labelledby="photo-title">
       <AppAvatar name={name} src={preview ?? avatarUrl} className="profile-photo__avatar" />
@@ -76,7 +96,7 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
           disabled={isBusy}
         />
         <div className="profile-photo__actions">
-          <AppButton type="button" fill="outline" isLoading={isBusy} onClick={() => inputRef.current?.click()}>
+          <AppButton type="button" fill="outline" isLoading={isBusy} onClick={openSources}>
             {hasAvatar ? 'Reemplazar' : 'Elegir fotografía'}
           </AppButton>
           {hasAvatar && (
@@ -92,6 +112,22 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
           )}
         </div>
       </div>
+      <IonActionSheet
+        isOpen={isSourceSheetOpen}
+        header="Fotografía de perfil"
+        buttons={[
+          { text: 'Tomar foto', icon: cameraOutline, data: { action: 'camera' } },
+          { text: 'Elegir de la galería', icon: imagesOutline, data: { action: 'gallery' } },
+          { text: 'Elegir un archivo', icon: folderOpenOutline, data: { action: 'file' } },
+          { text: 'Cancelar', role: 'cancel' },
+        ]}
+        onDidDismiss={({ detail }) => {
+          setIsSourceSheetOpen(false);
+          const action = (detail.data as { action?: string } | undefined)?.action;
+          if (action === 'camera' || action === 'gallery') void choose(action);
+          if (action === 'file') inputRef.current?.click();
+        }}
+      />
       <AppInteractionAlert
         isOpen={Boolean(error)}
         kind="error"

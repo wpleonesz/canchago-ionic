@@ -21,6 +21,7 @@ const AppSelect: React.FC<AppSelectProps> = ({ label, error, options, placeholde
     labelPlacement="stacked"
     fill="outline"
     interface="action-sheet"
+    cancelText="Cancelar"
     placeholder={placeholder}
     className={`app-select${error ? ' ion-invalid ion-touched' : ''}${className ? ` ${className}` : ''}`}
     errorText={error}
