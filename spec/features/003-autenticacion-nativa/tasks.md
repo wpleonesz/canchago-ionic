@@ -40,3 +40,9 @@
 
 - [x] Validado contra los criterios de aceptación de `spec.md`.
 - [x] Roadmap actualizado con la revisión completa.
+
+## Corrección: URL del backend en el simulador de iOS (2026-09-19)
+
+- [x] Hallazgo: `yarn ios` construía con el modo `production` y heredaba `VITE_API_BASE_URL=http://10.0.2.2:3000/api` de `.env.production`. `10.0.2.2` es un alias exclusivo del emulador de Android; en el simulador de iOS no responde y el login falla con "No se pudo conectar con el servidor" aunque backend y Keycloak funcionen (verificado: `POST /api/auth/mobile/login` → 200 desde el host).
+- [x] Solución definitiva (2026-09-19): la URL se resuelve **por plataforma en ejecución** (`resolveApiBaseUrl` en `src/config/env.ts`, con `Capacitor.getPlatform()`): `VITE_API_BASE_URL_ANDROID` (`10.0.2.2`) y `VITE_API_BASE_URL_IOS` (`localhost`), con `VITE_API_BASE_URL` de respaldo (web/dev). Un mismo build sirve para ambos emuladores sin cambios manuales; `ios`/`ios:run` vuelven a usar `vite build`. Probado con 4 pruebas nuevas.
+- [ ] Verificación manual del login en el simulador de iOS y en el emulador de Android con el mismo build.
