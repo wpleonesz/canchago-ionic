@@ -1,9 +1,10 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NativePhotoError } from '../../../services/native/camera';
+import { ImageProcessingError } from '../../../utils/image-compress';
 import ProfilePhotoEditor from './ProfilePhotoEditor';
 
-const mocks = vi.hoisted(() => ({ pickPhoto: vi.fn(), isNative: vi.fn() }));
+const mocks = vi.hoisted(() => ({ pickPhoto: vi.fn(), isNative: vi.fn(), fitAvatarImage: vi.fn() }));
 
 vi.mock('@capacitor/core', async () => {
   const actual = await vi.importActual<typeof import('@capacitor/core')>('@capacitor/core');
@@ -14,6 +15,11 @@ vi.mock('../../../services/native/camera', async () => {
     '../../../services/native/camera',
   );
   return { ...actual, pickPhoto: mocks.pickPhoto };
+});
+
+vi.mock('../../../utils/image-compress', async () => {
+  const actual = await vi.importActual<typeof import('../../../utils/image-compress')>('../../../utils/image-compress');
+  return { ...actual, fitAvatarImage: mocks.fitAvatarImage };
 });
 
 // IonActionSheet/IonAlert reales orquestan overlays asíncronos que jsdom no completa; se sustituyen por
@@ -60,6 +66,7 @@ describe('ProfilePhotoEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.isNative.mockReturnValue(true);
+    mocks.fitAvatarImage.mockImplementation((file: File) => Promise.resolve(file));
     // jsdom no implementa URL.createObjectURL, que el editor usa para la vista previa.
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     URL.revokeObjectURL = vi.fn();
@@ -111,16 +118,30 @@ describe('ProfilePhotoEditor', () => {
     expect(onUpload).not.toHaveBeenCalled();
   });
 
-  it('una imagen que supera 2 MiB se rechaza aunque venga de la cámara', async () => {
-    mocks.pickPhoto.mockResolvedValue(
-      new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'grande.jpg', { type: 'image/jpeg' }),
-    );
+  it('reduce la imagen antes de subirla cuando excede 2 MiB', async () => {
+    const big = new File([new Uint8Array(5 * 1024 * 1024)], 'grande.jpg', { type: 'image/jpeg' });
+    const reduced = new File([new Uint8Array(800_000)], 'perfil.jpg', { type: 'image/jpeg' });
+    mocks.pickPhoto.mockResolvedValue(big);
+    mocks.fitAvatarImage.mockResolvedValue(reduced);
     const onUpload = renderEditor();
     openSheet();
 
     await act(async () => screen.getByText('Tomar foto').click());
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('2 MiB');
+    expect(mocks.fitAvatarImage).toHaveBeenCalledWith(big);
+    await waitFor(() => expect(onUpload).toHaveBeenCalled());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('si la imagen no se puede reducir muestra el motivo y no sube nada', async () => {
+    mocks.pickPhoto.mockResolvedValue(new File(['x'], 'raro.heic', { type: 'image/heic' }));
+    mocks.fitAvatarImage.mockRejectedValue(new ImageProcessingError('undecodable'));
+    const onUpload = renderEditor();
+    openSheet();
+
+    await act(async () => screen.getByText('Tomar foto').click());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo leer la imagen');
     expect(onUpload).not.toHaveBeenCalled();
   });
 

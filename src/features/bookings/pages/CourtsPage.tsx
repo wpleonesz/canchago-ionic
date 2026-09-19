@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonInput, IonText } from '@ionic/react';
 import AppButton from '../../../components/common/AppButton';
+import CourtMapModal from '../../../components/maps/CourtMapModal';
 import AppEmptyState from '../../../components/feedback/AppEmptyState';
 import AppErrorState from '../../../components/feedback/AppErrorState';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
@@ -10,7 +11,7 @@ import { BusinessRuleError } from '../../../services/api/errorMapper';
 import { useLocation } from 'react-router-dom';
 import { normalizeResourceId } from '../../../validation/resource-id';
 import { useAvailability, useCreateBooking, useResources } from '../hooks/useBookings';
-import { directionsUrl, formatUsd } from '../utils/maps';
+import { directionsUrl, formatUsd, resourceCoordinates } from '../utils/maps';
 
 const localDate = (): string => {
   const now = new Date();
@@ -24,6 +25,7 @@ const CourtsPage: React.FC = () => {
   const [resourceId, setResourceId] = useState(() => normalizeResourceId(initial.get('resourceId')));
   const [date, setDate] = useState(() => initial.get('date') ?? today);
   const [selectedSlot, setSelectedSlot] = useState(() => normalizeResourceId(initial.get('slotId')));
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const attemptKey = useRef(crypto.randomUUID());
   const resources = useResources();
@@ -71,6 +73,7 @@ const CourtsPage: React.FC = () => {
 
       {selectedResource && <IonCard className="booking-summary"><IonCardContent>
         <IonText><strong>{formatUsd(selectedResource.hourlyPrice)} por hora</strong><br />{selectedResource.address}</IonText>
+        {resourceCoordinates(selectedResource) && <AppButton fill="clear" size="small" onClick={() => setIsMapOpen(true)}>Ver en el mapa</AppButton>}
         <AppButton fill="clear" size="small" href={directionsUrl(selectedResource)} target="_blank" rel="noreferrer">Cómo llegar</AppButton>
       </IonCardContent></IonCard>}
 
@@ -107,6 +110,7 @@ const CourtsPage: React.FC = () => {
       })()}
       <AppButton expand="block" disabled={!selectedSlot} isLoading={booking.isPending} onClick={() => void confirm()}>Confirmar reserva</AppButton>
       <AppInteractionAlert isOpen={Boolean(message)} kind={message?.startsWith('Reserva confirmada') ? 'success' : 'error'} message={message ?? ''} onDismiss={() => setMessage(null)} />
+      <CourtMapModal isOpen={isMapOpen} resource={selectedResource ?? null} onClose={() => setIsMapOpen(false)} />
     </section>
   );
 };

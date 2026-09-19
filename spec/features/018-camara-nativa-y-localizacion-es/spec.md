@@ -24,7 +24,9 @@ _Sin cambios de contrato._ Reutiliza el endpoint de avatar propio de la feature 
 ## Criterios de aceptación
 
 - [ ] "Mi perfil" ofrece Tomar foto / Elegir de la galería / Cancelar en español y ambas vías suben la foto por el flujo existente.
-- [ ] La imagen enviada nunca supera 2 MiB ni usa un tipo fuera de JPEG/PNG/WebP; si no se puede reducir bajo el límite se muestra un error claro.
+- [ ] La imagen enviada nunca supera 2 MiB ni usa un tipo fuera de JPEG/PNG/WebP. **Cualquier origen** (cámara, galería o archivo) que exceda el límite —o sea otro formato de imagen decodificable— se reduce automáticamente en el dispositivo (redimensionado + JPEG con calidad decreciente) sin intervención del usuario; una imagen que ya cumple se envía sin recomprimir. Solo si no se puede decodificar o reducir bajo el límite se muestra un error claro.
+- [ ] Mientras se reduce/sube, el botón muestra estado de carga y no permite doble envío.
+- [ ] La subida del avatar (`PUT /api/profile/avatar`) funciona desde la app nativa: el backend anuncia `PUT` en `Access-Control-Allow-Methods` (corrección en `canchago/proxy.ts`, con prueba).
 - [ ] Cancelar la cámara o la galería no muestra error ni modifica la foto actual.
 - [ ] Permiso de cámara denegado: mensaje en español con la vía alternativa (galería) y cómo activarlo en Ajustes; la app no se bloquea.
 - [ ] En navegador de desarrollo sigue funcionando el selector de archivos.

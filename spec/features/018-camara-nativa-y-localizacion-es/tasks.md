@@ -12,9 +12,16 @@ _Checklist accionable derivada del `plan.md`._
 - [x] Agregar `@capacitor/camera` y ejecutar `yarn cap:sync`.
 - [x] Crear `src/services/native/camera.ts` con `pickPhoto('camera' | 'gallery')` → `File | null` (reducida a 1024 px, JPEG 80 %), cancelación → `null`, errores clasificados por código estructurado del plugin. La validación de tamaño/tipo se reutiliza del flujo existente de `ProfilePhotoEditor`.
 - [x] Pruebas del servicio con el plugin simulado (foto, galería, cancelación, permiso denegado, sin cámara, resultado sin ruta) — 5 verdes.
+- [x] Crear `src/utils/image-compress.ts` (`fitAvatarImage`): sin cambios si ya cumple (≤ 2 MiB y JPEG/PNG/WebP); si no, decodifica con `createImageBitmap` (respetando la orientación EXIF), redimensiona (1600 → 1024 → 640 px) y recodifica a JPEG con calidad 0.85 → 0.45 hasta ≤ 2 MiB; fondo blanco para PNG/WebP con transparencia; error tipado si no se puede decodificar o reducir.
+- [x] Pruebas de `image-compress` (sin cambios si cumple, reduce lo grande, reintenta con menor calidad/tamaño, convierte otros formatos, no decodificable, no imagen) — 7 verdes con canvas simulado (jsdom no lo implementa; la reducción real requiere verificación manual en dispositivo).
+- [x] Integrar `fitAvatarImage` en `ProfilePhotoEditor` para las tres vías, con estado de carga durante el procesamiento.
 - [x] Reemplazar el botón de `ProfilePhotoEditor` por `IonActionSheet` en español con Tomar foto / Elegir de la galería / Elegir un archivo (selector de documentos del sistema) / Cancelar; en web abre directamente el selector de archivos.
 - [x] Mensajes de error/permiso denegado en español con la vía alternativa.
 - [x] Pruebas de `ProfilePhotoEditor` (hoja en español, cámara, cancelación sin error, permiso denegado, > 2 MiB, fallback web) — 6 verdes.
+
+## Backend (bug hallado en prueba nativa)
+
+- [x] `canchago/proxy.ts`: el preflight CORS no anunciaba `PUT`, así que la app nativa bloqueaba `PUT /api/profile/avatar` (y `PUT …/weekday-discounts`) con "No se pudo conectar con el servidor". Añadido `PUT` a `Access-Control-Allow-Methods` y prueba `tests/unit/proxy-cors.test.ts`. El navegador de desarrollo no lo mostraba porque el proxy de Vite es same-origin.
 
 ## Calendario
 

@@ -8,9 +8,7 @@ import AppConfirmDialog from '../../../components/feedback/AppConfirmDialog';
 import AppInteractionAlert from '../../../components/feedback/AppInteractionAlert';
 import { NativePhotoError, pickPhoto, type PhotoSource } from '../../../services/native/camera';
 import type { UpdateOwnAvatarRequest } from '../../../types/api/users';
-
-const MAX_BYTES = 2 * 1024 * 1024;
-const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'] as const;
+import { fitAvatarImage, ImageProcessingError } from '../../../utils/image-compress';
 
 const toBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -39,6 +37,7 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
   const [error, setError] = useState<string | null>(null);
   const [isRemoveConfirmationOpen, setIsRemoveConfirmationOpen] = useState(false);
   const [isSourceSheetOpen, setIsSourceSheetOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   useEffect(
     () => () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -46,12 +45,20 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
     [preview],
   );
 
-  const select = async (file?: File): Promise<void> => {
+  const select = async (picked?: File): Promise<void> => {
     setError(null);
-    if (!file) return;
-    if (!ALLOWED.includes(file.type as (typeof ALLOWED)[number]))
-      return setError('Selecciona una imagen JPEG, PNG o WebP.');
-    if (file.size > MAX_BYTES) return setError('La fotografía no puede superar 2 MiB.');
+    if (!picked) return;
+    let file: File;
+    setIsProcessing(true);
+    try {
+      // Reduce en el dispositivo lo que exceda 2 MiB (o no sea JPEG/PNG/WebP) antes de subirlo.
+      file = await fitAvatarImage(picked);
+    } catch (imageError) {
+      setError(imageError instanceof ImageProcessingError ? imageError.message : 'No se pudo procesar la imagen.');
+      return;
+    } finally {
+      setIsProcessing(false);
+    }
     const localUrl = URL.createObjectURL(file);
     setPreview(previous => {
       if (previous) URL.revokeObjectURL(previous);
@@ -96,7 +103,7 @@ const ProfilePhotoEditor: React.FC<Props> = ({ name, avatarUrl, hasAvatar, isBus
           disabled={isBusy}
         />
         <div className="profile-photo__actions">
-          <AppButton type="button" fill="outline" isLoading={isBusy} onClick={openSources}>
+          <AppButton type="button" fill="outline" isLoading={isBusy || isProcessing} onClick={openSources}>
             {hasAvatar ? 'Reemplazar' : 'Elegir fotografía'}
           </AppButton>
           {hasAvatar && (
